@@ -27,3 +27,6 @@ https://pin.it/6DE89VZhz
 https://pin.it/5kdHHhHyT
 
 https://pin.it/sBSgcWZ7r
+
+
+1 -> dump, 2 -> programa em C, 3  -> traducao de C p assembly
