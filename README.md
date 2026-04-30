@@ -4,10 +4,10 @@ O que é, funções necessárias, estruturas.
 
 ## Uma breve explicação sobre o que é BlockChain
 
--> A blockchain registra informações como: a quantia de bitcoins (ou outras moedas) transacionadas,
+* A blockchain registra informações como: a quantia de bitcoins (ou outras moedas) transacionadas,
 quem enviou, quem recebeu, quando essa transação foi feita e em qual lugar do livro ela está registrada. 
 Isso mostra que a transparência é um dos principais atributos da blockchain.
--> Ela armazena as informações de um grupo de transações em blocos,
+* Ela armazena as informações de um grupo de transações em blocos,
 marcando cada bloco com um registro de tempo e data. A cada período de tempo (10 minutos no blockchain), 
 é formado um novo bloco de transações, que se liga ao bloco anterior.
 
@@ -26,7 +26,10 @@ marcando cada bloco com um registro de tempo e data. A cada período de tempo (1
 -  withdraw - User informa se quer enviar para alguma outra corretora ou sacar diretamente para o seu banco.
 - register_exchanges - Funcao acessada apenas pelo administrador do servidor, para fornecer opcoes ao user que deseja fazer withdraw, cada exchange terá seu padrão, algumas irão pedir amount, user info, motivo e etc. 
 - create_block - Funcao chamada a cada 10 minutos de execução, dentro de cada 10 minutos irá entrar todas as transações feitas dentro deste periodo, entao caso ocorram 20 transações 08:00 e 08:10, teremos 20 transações dentro desse block.
-
+- buy_coins_with_money - Funcao para comprar qualquer coin, chamando check_amount com pagamento via Money
+- recharge_money - Funcao para dar recharge com dinheiro real, banco, pix, transfer
+- transfer_from_exchange - Funcao para receber MONEY atraves de outra exchange, nao RECEBE CRYPTO
+- withdraw_money - Saque direto para banco
 ## Estrutura Adotadas
 
 - Para os blocos de transações serão adotados listas encadeadas, lincando um ao outro sequencialmente.
