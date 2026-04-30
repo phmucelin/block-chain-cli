@@ -1,5 +1,9 @@
 Codigo Preview, struct de coin + como ira consumir API 
 
+sudo apt install libcurl4-openssl-dev
+
+gcc main.c -o app -lcurl
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
