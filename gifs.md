@@ -1,7 +1,6 @@
 dog coding - 
-<p>
-<img src="https://giphy.com/gifs/bandit-hamfs-iamaslydog-gLKanHorsDLDpEw9q4">
-</p>
+https://giphy.com/gifs/bandit-hamfs-iamaslydog-gLKanHorsDLDpEw9q4
+
 
 
 dog profile discord coding -> 
