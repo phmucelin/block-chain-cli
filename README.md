@@ -27,19 +27,20 @@ marcando cada bloco com um registro de tempo e data. A cada período de tempo (1
 - new_bank - Teremos bancos cadastrados para que seja possível realizar o withdraw.
 - delete_user - Essa funcao ira deletar totalmente o usuario de nossa base, no entanto irá chamar a transfer ou withdraw, caso ele tenha moedas, para verificar a existencia de moedas, será chamado Check_Amount. O UUID será liberado para um novo usuário.
 - X Check_Amount - Ira verificar se o usuário realmente pode realizar a transacao, check direto em seu saldo, validando moedas.
-- merge_Coins - Caso o usuario queira fazer uma transacao, no entanto nao tenha o valor cheio em apenas uma moeda, ele ira poder juntar todas as suas moedas em apenas uma de sua preferencia (Lembrando que cada moeda tem seu valor, ex: C Coin pode valer 1/2 da Pedro Coin, entao terá o ajuste).
-- Check_Transaction - Para evitar a chamada de muitas funções separadamente dentro da funcao Transaction, teremos a Check_Transaction, que irá cuidar de validar totalmente o envio da moeda para o outro usuário. Obs: Valores enviados incorretamente não poderão receber reembolso, apenas caso o usuário que recebeu queira devolver.
-- Transaction - Realiza a transacao de moedas entre dois usuarios, chamando a Check_Transaction, anteriormente de confirmar. Sera uma funcao bool.
+- X merge_Coins - Caso o usuario queira fazer uma transacao, no entanto nao tenha o valor cheio em apenas uma moeda, ele ira poder juntar todas as suas moedas em apenas uma de sua preferencia (Lembrando que cada moeda tem seu valor, ex: C Coin pode valer 1/2 da Pedro Coin, entao terá o ajuste).
+- X Check_Transaction - Para evitar a chamada de muitas funções separadamente dentro da funcao Transaction, teremos a Check_Transaction, que irá cuidar de validar totalmente o envio da moeda para o outro usuário. Obs: Valores enviados incorretamente não poderão receber reembolso, apenas caso o usuário que recebeu queira devolver.
+- X Transaction - Realiza a transacao de moedas entre dois usuarios, chamando a Check_Transaction, anteriormente de confirmar. Sera uma funcao bool.
 - List_Users - Funcao que ira permitir listar todos os usuarios cadastrados dentro do sistema, porém sem consultar o saldo prévio de cada um, pois isso será particular, apenas recebendo, nome, data de nasc e uuid.
 - save_user_infos_db - Salvar todas as infos dos usuarios dentro de um Banco de Dados.
 - save_transactions_info_db - Salvar todas transacoes, amount, id do user que envia e id de user que recebe. 
-- register_exchanges - Funcao acessada apenas pelo administrador do servidor, para fornecer opcoes ao user que deseja fazer withdraw, cada exchange terá seu padrão, algumas irão pedir amount, user info, motivo e etc. 
+- X register_exchanges - Funcao acessada apenas pelo administrador do servidor, para fornecer opcoes ao user que deseja fazer withdraw, cada exchange terá seu padrão, algumas irão pedir amount, user info, motivo e etc. 
 - create_block - Funcao chamada a cada 10 minutos de execução, dentro de cada 10 minutos irá entrar todas as transações feitas dentro deste periodo, entao caso ocorram 20 transações 08:00 e 08:10, teremos 20 transações dentro desse block.
-- buy_coins_with_money - Funcao para comprar qualquer coin, chamando check_amount com pagamento via Money.
+- X buy_coins_with_money - Funcao para comprar qualquer coin, chamando check_amount com pagamento via Money.
 - X recharge_money - Funcao para dar recharge com dinheiro real, banco, pix, transfer.
-- transfer_from_exchange - Funcao para receber MONEY atraves de outra exchange, nao RECEBE CRYPTO.
+- X transfer_from_exchange - Funcao para receber MONEY atraves de outra exchange, nao RECEBE CRYPTO.
 - X withdraw_money - Saque direto para banco pessoal.
-- getCoin_price - Receber o valor da coin em tempo real, retorna double.   
+- X getCoin_price - Receber o valor da coin em tempo real, retorna double.   
+- verify_admin - Verifica se usuario é um admin ou nao, com base no UUID, previamente cadastrado em um .bat.
 ## Estrutura Adotadas
 
 - Para os blocos de transações serão adotados listas encadeadas, lincando um ao outro sequencialmente.

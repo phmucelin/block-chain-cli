@@ -4,13 +4,6 @@
 #include <curl/curl.h>
 #include "coin_price_api.h"
 
-typedef enum {
-    BTC,
-    ETH,
-    USDT,
-    NUM_COINS
-} CoinType;
-
 double precoMercado[NUM_COINS];
 
 // estrutura para guardar resposta da API
