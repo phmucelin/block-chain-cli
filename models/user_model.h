@@ -5,20 +5,21 @@
 #include "transaction_model.h"
 #include "coinType_model.h"
 
-typedef struct {
+typedef struct Coin{
     enum CoinType type;
     int qtdCoin;
+    UserCoin* prox;
 } UserCoin;
 
 typedef struct
 {
   char* uuid;
   char* name;
+  char* hashPass;
   int age;
   struct Bank* bank;
   struct Transaction* id;
   UserCoin* coins; // array de moedas do usuário
-  int num_coins;   // quantidade de moedas diferentes
 }Users;
 
 #endif

@@ -3,6 +3,7 @@
 
 #include <time.h>
 #include "coinType_model.h"
+#include "user_model.h"
 
 
 typedef struct Transaction
@@ -10,10 +11,8 @@ typedef struct Transaction
     char* uuidSender;
     char* uuidReceive;
     struct tm datetime; // hora detalhada
-    enum CoinType* type;
-    enum CoinType* qtdCoin;
+    UserCoin* coin;
     int receipt; // id de recibo
-
 }Transaction;
 
 #endif
