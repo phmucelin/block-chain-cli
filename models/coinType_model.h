@@ -4,8 +4,7 @@
 typedef enum CoinType{
     BTC,
     ETH,
-    USDT,
-    NUM_COINS
+    USDT
 } CoinType;
 
 #endif
