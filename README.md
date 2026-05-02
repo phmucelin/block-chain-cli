@@ -31,8 +31,8 @@ marcando cada bloco com um registro de tempo e data. A cada período de tempo (1
 - X Check_Transaction - Para evitar a chamada de muitas funções separadamente dentro da funcao Transaction, teremos a Check_Transaction, que irá cuidar de validar totalmente o envio da moeda para o outro usuário. Obs: Valores enviados incorretamente não poderão receber reembolso, apenas caso o usuário que recebeu queira devolver.
 - X Transaction - Realiza a transacao de moedas entre dois usuarios, chamando a Check_Transaction, anteriormente de confirmar. Sera uma funcao bool.
 - List_Users - Funcao que ira permitir listar todos os usuarios cadastrados dentro do sistema, porém sem consultar o saldo prévio de cada um, pois isso será particular, apenas recebendo, nome, data de nasc e uuid.
-- save_user_infos_db - Salvar todas as infos dos usuarios dentro de um Banco de Dados.
-- save_transactions_info_db - Salvar todas transacoes, amount, id do user que envia e id de user que recebe. 
+- X save_user_infos_db - Salvar todas as infos dos usuarios dentro de um Banco de Dados.
+- X save_transactions_info_db - Salvar todas transacoes, amount, id do user que envia e id de user que recebe. 
 - X register_exchanges - Funcao acessada apenas pelo administrador do servidor, para fornecer opcoes ao user que deseja fazer withdraw, cada exchange terá seu padrão, algumas irão pedir amount, user info, motivo e etc. 
 - create_block - Funcao chamada a cada 10 minutos de execução, dentro de cada 10 minutos irá entrar todas as transações feitas dentro deste periodo, entao caso ocorram 20 transações 08:00 e 08:10, teremos 20 transações dentro desse block.
 - X buy_coins_with_money - Funcao para comprar qualquer coin, chamando check_amount com pagamento via Money.
