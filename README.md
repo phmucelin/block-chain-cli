@@ -12,12 +12,12 @@ marcando cada bloco com um registro de tempo e data. A cada período de tempo (1
 é formado um novo bloco de transações, que se liga ao bloco anterior.
 
 ## Structs necessárias
- - User -> Nome, UUID, coins, int qtdCoints, 
+ - X User -> Nome, UUID, coins, int qtdCoints, 
  - Banco -> Nome, Registro, Number_Clients. 
- - Transação ->
+ - X Transação ->
  - Block ->
  - Exchange ->
- - ENUM | Coins ->
+ - X ENUM | Coins ->
  - 
 
 ## Funções que serão necessárias inicialmente

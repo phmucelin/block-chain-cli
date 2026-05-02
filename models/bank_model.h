@@ -3,7 +3,7 @@
 
 //Usuarios sao ligados ao banco, nao tem necessidade de ter uma lista de usuarios nessa struct.
 
-typedef struct
+typedef struct Bank
 {
   char* name;
   char* id;
