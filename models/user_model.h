@@ -18,7 +18,7 @@ typedef struct
   char* hashPass;
   int age;
   struct Bank* bank;
-  struct Transaction* id;
+  struct Transaction* transaction_id;
   UserCoin* coins; // array de moedas do usuário
 }Users;
 

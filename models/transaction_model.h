@@ -13,6 +13,7 @@ typedef struct Transaction
     struct tm datetime; // hora detalhada
     UserCoin* coin;
     int receipt; // id de recibo
+    Transaction* prox; // ponteiro para a próxima transação (para encadeamento)
 }Transaction;
 
 #endif

@@ -4,9 +4,8 @@
 
 typedef struct User User;
 
-
 void generate_uuid();
 
-User* new_user(char* name, char* password, char* dataNasc);
+User *new_user(char *name, char *password, char *dataNasc);
 
 #endif
