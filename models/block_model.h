@@ -11,7 +11,7 @@ typedef struct Block {
     int num_transactions;
     char* previous_hash;
     char* hash;
-    struct Block* next;
+    struct Block* prox;
 } Block;
 
 #endif
