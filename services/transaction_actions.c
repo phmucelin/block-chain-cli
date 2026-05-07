@@ -1,11 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "transaction_model.h"
-#include "coinType_model.h"
-#include "user_model.h"
-#include "user_actions.c"
+#include "../models/transaction_model.h"
+#include "../models/coinType_model.h"
+#include "../models/user_model.h"
+#include "../services/user_actions.c"
 
 Transaction *new_transaction(char* uuidSender, char* uuidReceive, UserCoin* coin) {
+    if (uuidSender == NULL || uuidReceive == NULL || coin == NULL) {
+        return NULL;
+    }
+
     Transaction *new_transaction = (Transaction *)malloc(sizeof(Transaction));
     if (new_transaction == NULL) {
         return NULL; // Falha na alocação de memória
@@ -17,6 +21,7 @@ Transaction *new_transaction(char* uuidSender, char* uuidReceive, UserCoin* coin
     new_transaction->datetime = tm;
     new_transaction->coin = coin;
     new_transaction->receipt = rand() % 1000002; // Gerar um ID de recibo aleatório
+    new_transaction->prox = NULL;
     return new_transaction;
 }
 
@@ -34,15 +39,22 @@ Transaction *get_transaction_by_receipt(Transaction *transactions, int receipt) 
 Transaction *delete_transaction(Transaction *transactions, int receipt){
   Transaction *current = transactions;
   Transaction *previous = NULL;
+
   while (current != NULL) {
     if (current->receipt == receipt) {
       if (previous == NULL) {
-        transactions = current->prox; // Transação a ser deletada é a primeira
+        transactions = current->prox;
       } else {
-        previous->coin->prox = current->prox; // Pular a transação a ser deletada
+        previous->prox = current->prox;
       }
+
+      free(current);
+      return transactions;
     }
-    free(current); // Liberar a memória da transação deletada
-    return transactions; // Retornar a lista atualizada de transações      
+
+    previous = current;
+    current = current->prox;
   }
+
+  return transactions;
 }
