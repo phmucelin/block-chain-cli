@@ -1,9 +1,11 @@
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
-#include "bank_model.h"
-#include "transaction_model.h"
-#include "coinType_model.h"
-#include "user_model.h"
+#include <time.h>
+#include "../models/bank_model.h"
+#include "../models/transaction_model.h"
+#include "../models/coinType_model.h"
+#include "../models/user_model.h"
 
 char* generate_uuid(){
     const char *hex = "0121104592XcDKlPq7s8a9b4e6f3g5h0i1j2mnoqrstuuvwxzABEFGHIJYZ";
@@ -27,11 +29,11 @@ char* generate_uuid(){
     if (uuid_str == NULL) {
         return NULL; // Falha na alocação de memória
     }
+    strcpy(uuid_str, uuid);
     return uuid_str;
 }
 
 char* generate_hash(const char* password) {
-    size_t len = strlen(password);
     char* hash = (char*)malloc(33); // 32 caracteres + null terminator
     if (hash == NULL) {
         return NULL; // Falha na alocação de memória
@@ -50,6 +52,10 @@ Users *new_user(char *name, char *password, char *dataNasc)
     {
         return NULL; // Falha na alocação de memória
     }
+    if(!name || !password || !dataNasc) {
+        free(new_user);
+        return NULL;
+    }
     new_user->name = name;
     new_user->hashPass = generate_hash(password);
     new_user->age = atoi(dataNasc);
@@ -57,5 +63,11 @@ Users *new_user(char *name, char *password, char *dataNasc)
     new_user->transaction_id = NULL;
     new_user->coins = NULL;
     new_user->uuid = generate_uuid();
+    if(!new_user->hashPass || !new_user->uuid || !new_user->age || new_user->age <= 0) {
+        free(new_user->hashPass);
+        free(new_user->uuid);
+        free(new_user);
+        return NULL;
+    }
     return new_user;
 }
