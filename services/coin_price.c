@@ -2,9 +2,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <curl/curl.h>
-#include "models_functions/coin_price_api.h"
+#include "../models_functions/coin_price_api.h"
+#include "../models/coin_price.h"
 
 double precoMercado[NUM_COINS];
+
+// Mapa de CoinType para nome da moeda (conforme API CoinGecko)
+const char* coinNames[] = {
+    "bitcoin",   // BTC
+    "ethereum",  // ETH
+    "tether"     // USDT
+};
 
 // estrutura para guardar resposta da API
 typedef struct {
@@ -28,8 +36,8 @@ size_t write_callback(void *contents, size_t size, size_t nmemb, void *userp) {
     return totalSize;
 }
 
-// parsing MUITO simples (não robusto, mas funciona pro exemplo)
-double extrairPrecoBTC(const char *json) {
+// parsing simples de preço do JSON (procura por "usd":valor)
+double extrairPreco(const char *json) {
     char *pos = strstr(json, "\"usd\":");
     if (!pos) return 0.0;
 
@@ -38,7 +46,18 @@ double extrairPrecoBTC(const char *json) {
     return preco;
 }
 
-void atualizarPrecosAPI() {
+// compatibilidade com API antiga
+double extrairPrecoBTC(const char *json) {
+    return extrairPreco(json);
+}
+
+void atualizarPrecosAPI(CoinType tipo) {
+    // Validar tipo de moeda
+    if (tipo < 0 || tipo >= NUM_COINS) {
+        printf("Erro: Tipo de moeda inválido\n");
+        return;
+    }
+
     CURL *curl;
     CURLcode res;
 
@@ -49,19 +68,24 @@ void atualizarPrecosAPI() {
     curl = curl_easy_init();
     if (!curl) return;
 
-    curl_easy_setopt(curl, CURLOPT_URL,
-        "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd");
+    // Construir URL dinamicamente baseado no tipo
+    char url[256];
+    snprintf(url, sizeof(url),
+        "https://api.coingecko.com/api/v3/simple/price?ids=%s&vs_currencies=usd",
+        coinNames[tipo]);
 
+    curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
 
     res = curl_easy_perform(curl);
 
     if (res == CURLE_OK) {
-        double preco = extrairPrecoBTC(chunk.data);
-        precoMercado[BTC] = preco;
+        double preco = extrairPreco(chunk.data);
+        precoMercado[tipo] = preco;
+        printf("Preço de %s atualizado: %.2f USD\n", coinNames[tipo], preco);
     } else {
-        printf("Erro na requisição\n");
+        printf("Erro na requisição para %s\n", coinNames[tipo]);
     }
 
     curl_easy_cleanup(curl);
