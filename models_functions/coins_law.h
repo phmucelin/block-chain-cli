@@ -1,9 +1,10 @@
 #ifndef COINS_LAW_H
 #define COINS_LAW_H
 
-typedef struct User User;
-typedef struct CoinsType CoinsType;
+#include <stdbool.h>
 
-bool merge_coins(User* u, CoinsType* type1, int qtd_coins, CoinsType* type2, int qtd_coins_destine);
+#include "../models/user_model.h"
+
+bool merge_coins(Users* u, CoinType source_type, int qtd_coins, CoinType dest_type, int qtd_coins_destine);
 
 #endif
