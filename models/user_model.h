@@ -2,13 +2,14 @@
 #define USER_MODEL_H
 
 #include "bank_model.h"
-#include "transaction_model.h"
 #include "coinType_model.h"
+
+struct Transaction;
 
 typedef struct Coin{
     enum CoinType type;
     int qtdCoin;
-    UserCoin* prox;
+  struct Coin* prox;
 } UserCoin;
 
 typedef struct
