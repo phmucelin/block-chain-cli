@@ -64,36 +64,32 @@ Transaction *delete_transaction(Transaction *transactions, int receipt){
   return transactions;
 }
 
-int send_to_block(Users* u, Transaction* transactions) {
+int send_to_block(Users* u, Transaction* transaction, Block* block) {
     
-    if (transactions == NULL || transactions->uuidSender == NULL || transactions->uuidReceive == NULL || transactions->coin == NULL) 
+    if (transaction == NULL || transaction->uuidSender == NULL || transaction->uuidReceive == NULL || transaction->coin == NULL || block == NULL) 
     {
         return 0; // Parâmetros inválidos
     }
 
     // Verificar se o usuário tem saldo suficiente para a transferência
-    if (!check_transaction(transactions->uuidSender, transactions->uuidReceive, transactions->coin->qtdCoin, &transactions->coin->type)) 
+    if (!check_transaction(transaction->uuidSender, transaction->uuidReceive, transaction->coin->qtdCoin, &transaction->coin->type)) 
     {
         return 0; // Saldo insuficiente ou transação inválida
     }
+    
     // Aqui iremos chamar a funcao de criar um bloco direto do model de Blocks.h, passando a transação como parâmetro. 
-    Users* sender = get_user_by_uuid(u, transactions->uuidSender);
-    Users* receiver = get_user_by_uuid(u, transactions->uuidReceive);
+    Users* sender = get_user_by_uuid(u, transaction->uuidSender);
+    Users* receiver = get_user_by_uuid(u, transaction->uuidReceive);
     if(!sender || !receiver) 
     {
         return 0; // Usuário não encontrado
     }
     
-    Block* new_block = (Block*)malloc(sizeof(Block));
-    if (new_block == NULL) {
-        return 0; // Falha na alocação de memória
+    int sending_transaction = fill_block(transaction, block);
+    
+    if(!sending_transaction) 
+    {
+        return 0; // Falha ao enviar a transação para o bloco
     }
-    new_block->index = 0; // Defina o índice do bloco conforme necessário
-    new_block->created_at = time(NULL);
-    new_block->transactions = transactions;
-    new_block->num_transactions = 1; // Ajuste conforme o número de transações
-    new_block->previous_hash = NULL; // Defina o hash do bloco anterior conforme necessário
-    new_block->hash = generate_hash(new_block->transactions); // Calcule o hash do bloco conforme necessário
-    new_block->prox = NULL;
     return 1; // Transação enviada com sucesso
 }
