@@ -7,6 +7,7 @@
 #include "../models/block_model.h"
 #include "../models_functions/transfer_actions.h"
 #include "../services/user_actions.c"
+#include "../services/hashpass.c"
 
 Transaction *get_transaction_by_receipt(Transaction *transactions, int receipt) {
     Transaction *current = transactions;
@@ -92,7 +93,7 @@ int send_to_block(Users* u, Transaction* transactions) {
     new_block->transactions = transactions;
     new_block->num_transactions = 1; // Ajuste conforme o número de transações
     new_block->previous_hash = NULL; // Defina o hash do bloco anterior conforme necessário
-    new_block->hash = NULL; // Calcule o hash do bloco conforme necessário
+    new_block->hash = generate_hash(new_block->transactions); // Calcule o hash do bloco conforme necessário
     new_block->prox = NULL;
     return 1; // Transação enviada com sucesso
 }
