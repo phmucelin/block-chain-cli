@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../models/coinType_model.h"
-#include "../models/coins_law_model.h"
 #include "../models/user_model.h"
 #include "../services/user_actions.c"
-#include "../services/coin_price.c"
 #include "../models_functions/coins_law.h"
+
+double getPreco(CoinType type);
 
 static UserCoin *find_coin(UserCoin *coins, CoinType type)
 {

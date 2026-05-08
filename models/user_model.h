@@ -21,6 +21,7 @@ typedef struct
   struct Bank* bank;
   struct Transaction* transaction_id;
   UserCoin* coins; // array de moedas do usuário
+  struct Users* prox;
 }Users;
 
 #endif

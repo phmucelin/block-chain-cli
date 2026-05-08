@@ -63,6 +63,7 @@ Users *new_user(char *name, char *password, char *dataNasc)
     new_user->transaction_id = NULL;
     new_user->coins = NULL;
     new_user->uuid = generate_uuid();
+    new_user->prox = NULL;
     if(!new_user->hashPass || !new_user->uuid || !new_user->age || new_user->age <= 0) {
         free(new_user->hashPass);
         free(new_user->uuid);
@@ -70,4 +71,15 @@ Users *new_user(char *name, char *password, char *dataNasc)
         return NULL;
     }
     return new_user;
+}
+
+Users* get_user_by_uuid(Users* users, char* uuid) {
+    Users* current = users;
+    while (current != NULL) {
+        if (strcmp(current->uuid, uuid) == 0) {
+            return current;
+        }
+        current = current->prox;
+    }
+    return NULL;
 }
