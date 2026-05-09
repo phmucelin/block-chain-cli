@@ -6,6 +6,7 @@
 typedef struct Admin {
     char* uuid;
     char* name;
+    Admin* prox;
     // Adicione outros campos de admin se necessário
 } Admin;
 

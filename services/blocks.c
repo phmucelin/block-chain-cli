@@ -8,7 +8,7 @@
 #include "../models/block_model.h"
 #include "../models_functions/blocks.h"
 #include "../services/user_actions.c"
-#include "../services/hashpass.c"
+#include "../services/hash.c"
 #include "../services/transaction_actions.c" 
 #include "../services/coins_law.c" // verificar se a moeda de fato existe. 
 
