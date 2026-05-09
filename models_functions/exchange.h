@@ -6,6 +6,6 @@ typedef struct Exchange Exchange;
 /*
  * Necessario sempre chamar verify_admin(char* uuid), antes de permitir executar essa function.
  */
-Exchange* register_exchanges(char* name, int qtdClients); 
+Exchange* register_exchanges(char* name, int qtdClients, char* addres, char* country);
 
 #endif

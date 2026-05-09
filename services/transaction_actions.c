@@ -1,13 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include "../models/transaction_model.h"
 #include "../models/coinType_model.h"
 #include "../models/user_model.h"
-#include "../services/user_actions.c"
 #include "../models/block_model.h"
-#include "../models_functions/transfer_actions.h"
 #include "../services/user_actions.c"
 #include "../services/hashpass.c"
+
+/* forward declarations para funcoes definidas em outros modulos */
+bool check_transaction(Users* u, char* destine, int qtd_coins, CoinType* Type);
+int  fill_block(Transaction* transaction, Block* block);
 
 Transaction *get_transaction_by_receipt(Transaction *transactions, int receipt) {
     Transaction *current = transactions;
@@ -65,31 +68,34 @@ Transaction *delete_transaction(Transaction *transactions, int receipt){
 }
 
 int send_to_block(Users* u, Transaction* transaction, Block* block) {
-    
-    if (transaction == NULL || transaction->uuidSender == NULL || transaction->uuidReceive == NULL || transaction->coin == NULL || block == NULL) 
+
+    if (transaction == NULL || transaction->uuidSender == NULL || transaction->uuidReceive == NULL || transaction->coin == NULL || block == NULL)
     {
-        return 0; // Parâmetros inválidos
+        return 0;
     }
 
-    // Verificar se o usuário tem saldo suficiente para a transferência
-    if (!check_transaction(transaction->uuidSender, transaction->uuidReceive, transaction->coin->qtdCoin, &transaction->coin->type)) 
-    {
-        return 0; // Saldo insuficiente ou transação inválida
-    }
-    
-    // Aqui iremos chamar a funcao de criar um bloco direto do model de Blocks.h, passando a transação como parâmetro. 
+    /*
+     * Fix: check_transaction recebia transaction->uuidSender (char*) onde
+     * esperava Users* como primeiro argumento — tipo completamente errado.
+     * Correto: buscar o usuario remetente pelo UUID antes de chamar a funcao.
+     */
     Users* sender = get_user_by_uuid(u, transaction->uuidSender);
     Users* receiver = get_user_by_uuid(u, transaction->uuidReceive);
-    if(!sender || !receiver) 
+    if (!sender || !receiver)
     {
-        return 0; // Usuário não encontrado
+        return 0;
     }
-    
+
+    if (!check_transaction(sender, transaction->uuidReceive, transaction->coin->qtdCoin, &transaction->coin->type))
+    {
+        return 0;
+    }
+
     int sending_transaction = fill_block(transaction, block);
-    
-    if(!sending_transaction) 
+
+    if (!sending_transaction)
     {
-        return 0; // Falha ao enviar a transação para o bloco
+        return 0;
     }
-    return 1; // Transação enviada com sucesso
+    return 1;
 }

@@ -2,13 +2,7 @@
 #define COIN_PRICE_API_H
 
 #include <stddef.h>
-
-typedef enum {
-    BTC,
-    ETH,
-    USDT,
-    NUM_COINS
-} CoinType;
+#include "../models/coinType_model.h"
 
 size_t write_callback(void *contents, size_t size, size_t nmemb, void *userp);
 

@@ -1,6 +1,7 @@
 #ifndef TRANSFER_ACTIONS_H
 #define TRANSFER_ACTIONS_H
 
+#include <stdbool.h>
 #include "coin_price_api.h"
 
 typedef struct User User;

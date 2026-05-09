@@ -12,7 +12,7 @@ typedef struct Coin{
   struct Coin* prox;
 } UserCoin;
 
-typedef struct
+typedef struct Users
 {
   char* uuid;
   char* name;
@@ -20,8 +20,8 @@ typedef struct
   int age;
   struct Bank* bank;
   struct Transaction* transaction_id;
-  UserCoin* coins; // array de moedas do usuário
+  UserCoin* coins;
   struct Users* prox;
-}Users;
+} Users;
 
 #endif

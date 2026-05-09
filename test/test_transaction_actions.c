@@ -4,7 +4,18 @@
 
 #include <string.h>
 #include <stdlib.h>
-#include <string.h>
+
+/* stubs para funcoes referenciadas por send_to_block (nao testada aqui) */
+bool check_transaction(Users *u, char *destine, int qtd_coins, CoinType *Type)
+{
+    (void)u; (void)destine; (void)qtd_coins; (void)Type;
+    return false;
+}
+int fill_block(Transaction *transaction, Block *block)
+{
+    (void)transaction; (void)block;
+    return 0;
+}
 
 void setUp(void)
 {
@@ -143,14 +154,119 @@ void delete_transaction_not_found(void)
     free(updated_transactions);
 }
 
+void test_get_transaction_by_receipt_null_list(void)
+{
+    Transaction *found = get_transaction_by_receipt(NULL, 42);
+    TEST_ASSERT_NULL(found);
+}
+
+void test_new_transaction_datetime_is_set(void)
+{
+    UserCoin *coin = (UserCoin *)malloc(sizeof(UserCoin));
+    coin->qtdCoin = 1;
+    coin->type    = BTC;
+    coin->prox    = NULL;
+
+    Transaction *tx = new_transaction("sender", "receiver", coin);
+
+    /* year is stored as years-since-1900; any recent year is > 120 */
+    TEST_ASSERT_GREATER_THAN(120, tx->datetime.tm_year);
+
+    free(coin);
+    free(tx);
+}
+
+void test_new_transaction_receipt_in_range(void)
+{
+    UserCoin *coin = (UserCoin *)malloc(sizeof(UserCoin));
+    coin->qtdCoin = 1;
+    coin->type    = ETH;
+    coin->prox    = NULL;
+
+    Transaction *tx = new_transaction("s", "r", coin);
+    TEST_ASSERT_GREATER_OR_EQUAL(0, tx->receipt);
+    TEST_ASSERT_LESS_THAN(1000002, tx->receipt);
+
+    free(coin);
+    free(tx);
+}
+
+void test_new_transaction_prox_null(void)
+{
+    UserCoin *coin = (UserCoin *)malloc(sizeof(UserCoin));
+    coin->qtdCoin = 5;
+    coin->type    = USDT;
+    coin->prox    = NULL;
+
+    Transaction *tx = new_transaction("s", "r", coin);
+    TEST_ASSERT_NULL(tx->prox);
+
+    free(coin);
+    free(tx);
+}
+
+void test_delete_transaction_null_list_returns_null(void)
+{
+    Transaction *result = delete_transaction(NULL, 99);
+    TEST_ASSERT_NULL(result);
+}
+
+void test_delete_transaction_only_element_returns_null(void)
+{
+    UserCoin *coin = (UserCoin *)malloc(sizeof(UserCoin));
+    coin->qtdCoin = 1; coin->type = BTC; coin->prox = NULL;
+    Transaction *tx = new_transaction("s", "r", coin);
+    int receipt = tx->receipt;
+
+    Transaction *result = delete_transaction(tx, receipt);
+    TEST_ASSERT_NULL(result);
+
+    free(coin);
+    /* tx was freed inside delete_transaction */
+}
+
+void test_delete_transaction_middle_element(void)
+{
+    UserCoin *c1 = (UserCoin *)malloc(sizeof(UserCoin));
+    UserCoin *c2 = (UserCoin *)malloc(sizeof(UserCoin));
+    UserCoin *c3 = (UserCoin *)malloc(sizeof(UserCoin));
+    c1->qtdCoin = 1; c1->type = BTC; c1->prox = NULL;
+    c2->qtdCoin = 2; c2->type = ETH; c2->prox = NULL;
+    c3->qtdCoin = 3; c3->type = USDT; c3->prox = NULL;
+
+    Transaction *t1 = new_transaction("s1", "r1", c1);
+    Transaction *t2 = new_transaction("s2", "r2", c2);
+    Transaction *t3 = new_transaction("s3", "r3", c3);
+    t1->prox = t2;
+    t2->prox = t3;
+
+    int mid_receipt = t2->receipt;
+    Transaction *head = delete_transaction(t1, mid_receipt);
+
+    TEST_ASSERT_EQUAL_PTR(t1, head);
+    TEST_ASSERT_EQUAL_PTR(t3, head->prox);
+    TEST_ASSERT_NULL(get_transaction_by_receipt(head, mid_receipt));
+
+    free(c1); free(c2); free(c3);
+    free(t1); free(t3);
+    /* t2 freed inside delete_transaction */
+}
+
 int main(void)
 {
     UNITY_BEGIN();
     RUN_TEST(test_new_transaction);
     RUN_TEST(test_new_transaction_null);
+    RUN_TEST(test_new_transaction_datetime_is_set);
+    RUN_TEST(test_new_transaction_receipt_in_range);
+    RUN_TEST(test_new_transaction_prox_null);
     RUN_TEST(test_get_transaction_by_receipt);
     RUN_TEST(test_get_transaction_by_receipt_not_found);
+    RUN_TEST(test_get_transaction_by_receipt_null_list);
     RUN_TEST(test_delete_transaction);
     RUN_TEST(delete_transaction_not_found);
+    RUN_TEST(test_delete_transaction_null_list_returns_null);
+    RUN_TEST(test_delete_transaction_only_element_returns_null);
+    RUN_TEST(test_delete_transaction_middle_element);
     return UNITY_END();
 }
