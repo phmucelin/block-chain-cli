@@ -5,16 +5,30 @@
 #include <string.h>
 #include <stdlib.h>
 
-/* stubs para funcoes referenciadas por send_to_block (nao testada aqui) */
-bool check_transaction(Users *u, char *destine, int qtd_coins, CoinType *Type)
-{
-    (void)u; (void)destine; (void)qtd_coins; (void)Type;
-    return false;
-}
+/* stub para funcao referenciada por send_to_block (nao testada aqui) */
 int fill_block(Transaction *transaction, Block *block)
 {
     (void)transaction; (void)block;
     return 0;
+}
+
+static void free_queue(Queue *queue)
+{
+    if (queue == NULL)
+    {
+        return;
+    }
+
+    Transaction *current = queue->first;
+    while (current != NULL)
+    {
+        Transaction *next = current->prox;
+        free(current);
+        current = next;
+    }
+
+    queue->first = NULL;
+    queue->last = NULL;
 }
 
 void setUp(void)
@@ -33,7 +47,8 @@ void test_new_transaction(void)
     coin->qtdCoin = 100;
     coin->type = BTC;
 
-    Transaction *transaction = new_transaction("uuidSender", "uuidReceive", coin);
+    Queue queue = {0};
+    Transaction *transaction = new_transaction("uuidSender", "uuidReceive", coin, &queue);
 
     TEST_ASSERT_NOT_NULL(transaction);
     TEST_ASSERT_EQUAL_STRING("uuidSender", transaction->uuidSender);
@@ -42,15 +57,16 @@ void test_new_transaction(void)
     TEST_ASSERT_EQUAL_INT(BTC, transaction->coin->type);
 
     free(coin);
-    free(transaction);
+    free_queue(&queue);
 }
 
 void test_new_transaction_null(void)
 {
-    Transaction *transaction = new_transaction("uuidSender", "uuidReceive", NULL);
-    Transaction *transaction_full_null = new_transaction(NULL, NULL, NULL);
-    Transaction *transaction_user1_null = new_transaction("user1", NULL, NULL);
-    Transaction *transaction_user2_null = new_transaction(NULL, "user2", NULL);
+    Queue queue = {0};
+    Transaction *transaction = new_transaction("uuidSender", "uuidReceive", NULL, &queue);
+    Transaction *transaction_full_null = new_transaction(NULL, NULL, NULL, &queue);
+    Transaction *transaction_user1_null = new_transaction("user1", NULL, NULL, &queue);
+    Transaction *transaction_user2_null = new_transaction(NULL, "user2", NULL, &queue);
 
     TEST_ASSERT_NULL(transaction_full_null);
     TEST_ASSERT_NULL(transaction);
@@ -68,12 +84,11 @@ void test_get_transaction_by_receipt(void)
     coin2->qtdCoin = 50;
     coin2->type = ETH;
 
-    Transaction *transaction1 = new_transaction("uuidSender1", "uuidReceive1", coin1);
-    Transaction *transaction2 = new_transaction("uuidSender2", "uuidReceive2", coin2);
+    Queue queue = {0};
+    Transaction *transaction1 = new_transaction("uuidSender1", "uuidReceive1", coin1, &queue);
+    Transaction *transaction2 = new_transaction("uuidSender2", "uuidReceive2", coin2, &queue);
 
-    transaction1->prox = transaction2; // Encadeando as transações
-
-    Transaction *found_transaction = get_transaction_by_receipt(transaction1, transaction2->receipt);
+    Transaction *found_transaction = get_transaction_by_receipt(&queue, transaction2->receipt);
 
     TEST_ASSERT_NOT_NULL(found_transaction);
     TEST_ASSERT_EQUAL_STRING("uuidSender2", found_transaction->uuidSender);
@@ -83,8 +98,7 @@ void test_get_transaction_by_receipt(void)
 
     free(coin1);
     free(coin2);
-    free(transaction1);
-    free(transaction2);
+    free_queue(&queue);
 }
 
 void test_get_transaction_by_receipt_not_found(void)
@@ -93,14 +107,15 @@ void test_get_transaction_by_receipt_not_found(void)
     coin1->qtdCoin = 100;
     coin1->type = BTC;
 
-    Transaction *transaction1 = new_transaction("uuidSender1", "uuidReceive1", coin1);
+    Queue queue = {0};
+    new_transaction("uuidSender1", "uuidReceive1", coin1, &queue);
 
-    Transaction *found_transaction = get_transaction_by_receipt(transaction1, 999999); // Receipt inexistente
+    Transaction *found_transaction = get_transaction_by_receipt(&queue, 999999); // Receipt inexistente
 
     TEST_ASSERT_NULL(found_transaction); // A transação não deve ser encontrada
 
     free(coin1);
-    free(transaction1);
+    free_queue(&queue);
 }
 
 void test_delete_transaction(void)
@@ -113,25 +128,25 @@ void test_delete_transaction(void)
     coin2->qtdCoin = 50;
     coin2->type = ETH;
 
-    Transaction *transaction1 = new_transaction("uuidSender1", "uuidReceive1", coin1);
-    Transaction *transaction2 = new_transaction("uuidSender2", "uuidReceive2", coin2);
+    Queue queue = {0};
+    Transaction *transaction1 = new_transaction("uuidSender1", "uuidReceive1", coin1, &queue);
+    new_transaction("uuidSender2", "uuidReceive2", coin2, &queue);
 
-    transaction1->prox = transaction2; // Encadeando as transações
+    int deleted = delete_transaction(&queue, transaction1->receipt);
 
-    Transaction *updated_transactions = delete_transaction(transaction1, transaction1->receipt);
-
-    Transaction *found_transaction = get_transaction_by_receipt(updated_transactions, transaction1->receipt);
+    Transaction *found_transaction = get_transaction_by_receipt(&queue, transaction1->receipt);
 
     TEST_ASSERT_NULL(found_transaction); // A transação deletada não deve ser encontrada
-    TEST_ASSERT_NOT_NULL(updated_transactions);
-    TEST_ASSERT_EQUAL_STRING("uuidSender2", updated_transactions->uuidSender);
-    TEST_ASSERT_EQUAL_STRING("uuidReceive2", updated_transactions->uuidReceive);
-    TEST_ASSERT_EQUAL_INT(50, updated_transactions->coin->qtdCoin);
-    TEST_ASSERT_EQUAL_INT(ETH, updated_transactions->coin->type);
+    TEST_ASSERT_EQUAL_INT(1, deleted);
+    TEST_ASSERT_NOT_NULL(queue.first);
+    TEST_ASSERT_EQUAL_STRING("uuidSender2", queue.first->uuidSender);
+    TEST_ASSERT_EQUAL_STRING("uuidReceive2", queue.first->uuidReceive);
+    TEST_ASSERT_EQUAL_INT(50, queue.first->coin->qtdCoin);
+    TEST_ASSERT_EQUAL_INT(ETH, queue.first->coin->type);
 
     free(coin1);
     free(coin2);
-    free(updated_transactions);
+    free_queue(&queue);
 }
 
 void delete_transaction_not_found(void)
@@ -140,18 +155,20 @@ void delete_transaction_not_found(void)
     coin1->qtdCoin = 100;
     coin1->type = BTC;
 
-    Transaction *transaction1 = new_transaction("uuidSender1", "uuidReceive1", coin1);
+    Queue queue = {0};
+    new_transaction("uuidSender1", "uuidReceive1", coin1, &queue);
 
-    Transaction *updated_transactions = delete_transaction(transaction1, 999999); // Receipt inexistente
+    int deleted = delete_transaction(&queue, 999999); // Receipt inexistente
 
-    TEST_ASSERT_NOT_NULL(updated_transactions); // A lista de transações deve permanecer inalterada
-    TEST_ASSERT_EQUAL_STRING("uuidSender1", updated_transactions->uuidSender);
-    TEST_ASSERT_EQUAL_STRING("uuidReceive1", updated_transactions->uuidReceive);
-    TEST_ASSERT_EQUAL_INT(100, updated_transactions->coin->qtdCoin);
-    TEST_ASSERT_EQUAL_INT(BTC, updated_transactions->coin->type);
+    TEST_ASSERT_EQUAL_INT(0, deleted); // A lista de transações deve permanecer inalterada
+    TEST_ASSERT_NOT_NULL(queue.first);
+    TEST_ASSERT_EQUAL_STRING("uuidSender1", queue.first->uuidSender);
+    TEST_ASSERT_EQUAL_STRING("uuidReceive1", queue.first->uuidReceive);
+    TEST_ASSERT_EQUAL_INT(100, queue.first->coin->qtdCoin);
+    TEST_ASSERT_EQUAL_INT(BTC, queue.first->coin->type);
 
     free(coin1);
-    free(updated_transactions);
+    free_queue(&queue);
 }
 
 void test_get_transaction_by_receipt_null_list(void)
@@ -167,13 +184,14 @@ void test_new_transaction_datetime_is_set(void)
     coin->type    = BTC;
     coin->prox    = NULL;
 
-    Transaction *tx = new_transaction("sender", "receiver", coin);
+    Queue queue = {0};
+    Transaction *tx = new_transaction("sender", "receiver", coin, &queue);
 
     /* year is stored as years-since-1900; any recent year is > 120 */
     TEST_ASSERT_GREATER_THAN(120, tx->datetime.tm_year);
 
     free(coin);
-    free(tx);
+    free_queue(&queue);
 }
 
 void test_new_transaction_receipt_in_range(void)
@@ -183,12 +201,13 @@ void test_new_transaction_receipt_in_range(void)
     coin->type    = ETH;
     coin->prox    = NULL;
 
-    Transaction *tx = new_transaction("s", "r", coin);
+    Queue queue = {0};
+    Transaction *tx = new_transaction("s", "r", coin, &queue);
     TEST_ASSERT_GREATER_OR_EQUAL(0, tx->receipt);
     TEST_ASSERT_LESS_THAN(1000002, tx->receipt);
 
     free(coin);
-    free(tx);
+    free_queue(&queue);
 }
 
 void test_new_transaction_prox_null(void)
@@ -198,31 +217,33 @@ void test_new_transaction_prox_null(void)
     coin->type    = USDT;
     coin->prox    = NULL;
 
-    Transaction *tx = new_transaction("s", "r", coin);
+    Queue queue = {0};
+    Transaction *tx = new_transaction("s", "r", coin, &queue);
     TEST_ASSERT_NULL(tx->prox);
 
     free(coin);
-    free(tx);
+    free_queue(&queue);
 }
 
 void test_delete_transaction_null_list_returns_null(void)
 {
-    Transaction *result = delete_transaction(NULL, 99);
-    TEST_ASSERT_NULL(result);
+    int result = delete_transaction(NULL, 99);
+    TEST_ASSERT_EQUAL_INT(0, result);
 }
 
 void test_delete_transaction_only_element_returns_null(void)
 {
     UserCoin *coin = (UserCoin *)malloc(sizeof(UserCoin));
     coin->qtdCoin = 1; coin->type = BTC; coin->prox = NULL;
-    Transaction *tx = new_transaction("s", "r", coin);
+    Queue queue = {0};
+    Transaction *tx = new_transaction("s", "r", coin, &queue);
     int receipt = tx->receipt;
 
-    Transaction *result = delete_transaction(tx, receipt);
-    TEST_ASSERT_NULL(result);
+    int result = delete_transaction(&queue, receipt);
+    TEST_ASSERT_EQUAL_INT(1, result);
+    TEST_ASSERT_NULL(queue.first);
 
     free(coin);
-    /* tx was freed inside delete_transaction */
 }
 
 void test_delete_transaction_middle_element(void)
@@ -234,22 +255,21 @@ void test_delete_transaction_middle_element(void)
     c2->qtdCoin = 2; c2->type = ETH; c2->prox = NULL;
     c3->qtdCoin = 3; c3->type = USDT; c3->prox = NULL;
 
-    Transaction *t1 = new_transaction("s1", "r1", c1);
-    Transaction *t2 = new_transaction("s2", "r2", c2);
-    Transaction *t3 = new_transaction("s3", "r3", c3);
-    t1->prox = t2;
-    t2->prox = t3;
+    Queue queue = {0};
+    Transaction *t1 = new_transaction("s1", "r1", c1, &queue);
+    Transaction *t2 = new_transaction("s2", "r2", c2, &queue);
+    Transaction *t3 = new_transaction("s3", "r3", c3, &queue);
 
     int mid_receipt = t2->receipt;
-    Transaction *head = delete_transaction(t1, mid_receipt);
+    int deleted = delete_transaction(&queue, mid_receipt);
 
-    TEST_ASSERT_EQUAL_PTR(t1, head);
-    TEST_ASSERT_EQUAL_PTR(t3, head->prox);
-    TEST_ASSERT_NULL(get_transaction_by_receipt(head, mid_receipt));
+    TEST_ASSERT_EQUAL_INT(1, deleted);
+    TEST_ASSERT_EQUAL_PTR(t1, queue.first);
+    TEST_ASSERT_EQUAL_PTR(t3, queue.first->prox);
+    TEST_ASSERT_NULL(get_transaction_by_receipt(&queue, mid_receipt));
 
     free(c1); free(c2); free(c3);
-    free(t1); free(t3);
-    /* t2 freed inside delete_transaction */
+    free_queue(&queue);
 }
 
 int main(void)

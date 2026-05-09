@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include "../models/transaction_model.h"
 #include "../models/coinType_model.h"
 #include "../models/user_model.h"
@@ -8,24 +9,38 @@
 #include "../services/user_actions.c"
 #include "../services/hashpass.c"
 
-/* forward declarations para funcoes definidas em outros modulos */
-bool check_transaction(Users* u, Transaction* transaction, Queue* queue, CoinType coin)
+static Transaction *dequeue_transaction(Queue *queue)
 {
-    if (u == NULL || transaction == NULL || queue == NULL) 
+    if (queue == NULL || queue->first == NULL)
+    {
+        return NULL;
+    }
+
+    Transaction *tx = queue->first;
+    queue->first = tx->prox;
+    if (queue->first == NULL)
+    {
+        queue->last = NULL;
+    }
+    tx->prox = NULL;
+    return tx;
+}
+
+static bool check_transaction(Users* users, Transaction* transaction)
+{
+    if (users == NULL || transaction == NULL || transaction->coin == NULL)
     {
         return false;
     }
     
-    Users* get_sender = get_user_by_uuid(u, u->uuid);
-    Users* get_receiver = get_user_by_uuid(u, transaction->uuidReceive);
+    Users* get_sender = get_user_by_uuid(users, transaction->uuidSender);
+    Users* get_receiver = get_user_by_uuid(users, transaction->uuidReceive);
     if(!get_sender || !get_receiver) return false; // Usuario remetente ou destinatário nao encontrado
     
-    if (transaction->coin->type != coin || transaction->coin->qtdCoin <= 0)
+    if (transaction->coin->qtdCoin <= 0)
     {
         return false; // Tipo de moeda não corresponde ou quantidade inválida
     }
-    bool test = get_transaction_by_receipt(queue, transaction->receipt) != NULL;
-    if (!test) return false; // Transacao nao existe.
 
     return true;
 }
@@ -105,35 +120,54 @@ int delete_transaction(Queue *queue, int receipt){
   return 0;
 }
 
-int send_to_block(Users* u, Transaction* transaction, Queue* queue, Block* block) {
-
-    if (transaction == NULL || transaction->uuidSender == NULL || transaction->uuidReceive == NULL || transaction->coin == NULL || block == NULL || queue == NULL)
+int can_accept_transaction(Block *block, time_t now)
+{
+    if (block == NULL)
     {
         return 0;
     }
 
-    /*
-     * Fix: check_transaction recebia transaction->uuidSender (char*) onde
-     * esperava Users* como primeiro argumento — tipo completamente errado.
-     * Correto: buscar o usuario remetente pelo UUID antes de chamar a funcao.
-     */
-    Users* sender = get_user_by_uuid(u, transaction->uuidSender);
-    Users* receiver = get_user_by_uuid(u, transaction->uuidReceive);
-    if (!sender || !receiver)
+    return now < block->expire_at;
+}
+
+int send_to_block(Users* users, Queue* queue, Block* block, time_t now) {
+    if (users == NULL || queue == NULL || block == NULL)
     {
         return 0;
     }
 
-    if (!check_transaction(sender, transaction, queue, transaction->coin->type))
+    if (!can_accept_transaction(block, now))
     {
         return 0;
     }
 
-    int sending_transaction = fill_block(transaction, block);
-
-    if (!sending_transaction)
+    if (queue->first == NULL)
     {
         return 0;
     }
+
+    Transaction *tx = queue->first;
+    if (!check_transaction(users, tx))
+    {
+        return 0;
+    }
+
+    tx = dequeue_transaction(queue);
+    if (tx == NULL)
+    {
+        return 0;
+    }
+
+    if (!fill_block(tx, block))
+    {
+        tx->prox = queue->first;
+        queue->first = tx;
+        if (queue->last == NULL)
+        {
+            queue->last = tx;
+        }
+        return 0;
+    }
+
     return 1;
 }
