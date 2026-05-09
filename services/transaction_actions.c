@@ -9,8 +9,26 @@
 #include "../services/hashpass.c"
 
 /* forward declarations para funcoes definidas em outros modulos */
-bool check_transaction(Users* u, char* destine, int qtd_coins, CoinType* Type);
-int  fill_block(Transaction* transaction, Block* block);
+bool check_transaction(Users* u, Transaction* transaction, CoinType coin)
+{
+    if (u == NULL || transaction == NULL) 
+    {
+        return false;
+    }
+    
+    Users* get_sender = get_user_by_uuid(u, u->uuid);
+    Users* get_receiver = get_user_by_uuid(u, transaction->uuidReceive);
+    if(!get_sender || !get_receiver) return false; // Usuario remetente ou destinatário nao encontrado
+    
+    if (transaction->coin->type != coin || transaction->coin->qtdCoin <= 0)
+    {
+        return false; // Tipo de moeda não corresponde ou quantidade inválida
+    }
+    bool test = get_transaction_by_receipt(transaction, transaction->receipt) != NULL;
+    if (!test) return false; // Transacao nao existe.
+
+    return true;
+}
 
 Transaction *get_transaction_by_receipt(Transaction *transactions, int receipt) {
     Transaction *current = transactions;
@@ -86,7 +104,7 @@ int send_to_block(Users* u, Transaction* transaction, Block* block) {
         return 0;
     }
 
-    if (!check_transaction(sender, transaction->uuidReceive, transaction->coin->qtdCoin, &transaction->coin->type))
+    if (!check_transaction(sender, transaction, transaction->coin->type))
     {
         return 0;
     }
