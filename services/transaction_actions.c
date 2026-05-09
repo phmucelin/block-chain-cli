@@ -9,9 +9,9 @@
 #include "../services/hashpass.c"
 
 /* forward declarations para funcoes definidas em outros modulos */
-bool check_transaction(Users* u, Transaction* transaction, CoinType coin)
+bool check_transaction(Users* u, Transaction* transaction, Queue* queue, CoinType coin)
 {
-    if (u == NULL || transaction == NULL) 
+    if (u == NULL || transaction == NULL || queue == NULL) 
     {
         return false;
     }
@@ -24,25 +24,28 @@ bool check_transaction(Users* u, Transaction* transaction, CoinType coin)
     {
         return false; // Tipo de moeda não corresponde ou quantidade inválida
     }
-    bool test = get_transaction_by_receipt(transaction, transaction->receipt) != NULL;
+    bool test = get_transaction_by_receipt(queue, transaction->receipt) != NULL;
     if (!test) return false; // Transacao nao existe.
 
     return true;
 }
 
-Transaction *get_transaction_by_receipt(Transaction *transactions, int receipt) {
-    Transaction *current = transactions;
+Transaction *get_transaction_by_receipt(Queue *queue, int receipt) {
+    if (queue == NULL) {
+        return NULL;
+    }
+    Transaction *current = queue->first;
     while (current != NULL) {
         if (current->receipt == receipt) {
             return current;
         }
-        current = current->prox; // Supondo que as transações estão encadeadas
+        current = current->prox;
     }
     return NULL; // Transação não encontrada
 }
 
-Transaction *new_transaction(char* uuidSender, char* uuidReceive, UserCoin* coin) {
-    if (uuidSender == NULL || uuidReceive == NULL || coin == NULL) {
+Transaction *new_transaction(char* uuidSender, char* uuidReceive, UserCoin* coin, Queue* queue) {
+    if (uuidSender == NULL || uuidReceive == NULL || coin == NULL || queue == NULL) {
         return NULL;
     }
 
@@ -50,6 +53,7 @@ Transaction *new_transaction(char* uuidSender, char* uuidReceive, UserCoin* coin
     if (new_transaction == NULL) {
         return NULL; // Falha na alocação de memória
     }
+    
     new_transaction->uuidSender = uuidSender;
     new_transaction->uuidReceive = uuidReceive;
     time_t t = time(NULL);
@@ -59,35 +63,51 @@ Transaction *new_transaction(char* uuidSender, char* uuidReceive, UserCoin* coin
     new_transaction->receipt = rand() % 1000002; // Gerar um ID de recibo aleatório
     new_transaction->prox = NULL;
     
+    if (queue->first == NULL) {
+        queue->first = new_transaction;
+        queue->last = new_transaction;
+    } else {
+        queue->last->prox = new_transaction;
+        queue->last = new_transaction;
+    }
+    
     return new_transaction;
 }
 
-Transaction *delete_transaction(Transaction *transactions, int receipt){
-  Transaction *current = transactions;
+int delete_transaction(Queue *queue, int receipt){
+  if (queue == NULL) {
+    return 0;
+  }
+  
+  Transaction *current = queue->first;
   Transaction *previous = NULL;
 
   while (current != NULL) {
     if (current->receipt == receipt) {
       if (previous == NULL) {
-        transactions = current->prox;
+        queue->first = current->prox;
       } else {
         previous->prox = current->prox;
       }
+      
+      if (current == queue->last) {
+        queue->last = previous;
+      }
 
       free(current);
-      return transactions;
+      return 1;
     }
 
     previous = current;
     current = current->prox;
   }
 
-  return transactions;
+  return 0;
 }
 
-int send_to_block(Users* u, Transaction* transaction, Block* block) {
+int send_to_block(Users* u, Transaction* transaction, Queue* queue, Block* block) {
 
-    if (transaction == NULL || transaction->uuidSender == NULL || transaction->uuidReceive == NULL || transaction->coin == NULL || block == NULL)
+    if (transaction == NULL || transaction->uuidSender == NULL || transaction->uuidReceive == NULL || transaction->coin == NULL || block == NULL || queue == NULL)
     {
         return 0;
     }
@@ -104,7 +124,7 @@ int send_to_block(Users* u, Transaction* transaction, Block* block) {
         return 0;
     }
 
-    if (!check_transaction(sender, transaction, transaction->coin->type))
+    if (!check_transaction(sender, transaction, queue, transaction->coin->type))
     {
         return 0;
     }

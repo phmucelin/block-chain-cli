@@ -17,4 +17,10 @@ typedef struct Transaction
     struct Transaction* prox; // ponteiro para a próxima transação (para encadeamento)
 }Transaction;
 
+typedef struct FilaTransaction
+{
+    struct Transaction *first;
+    struct Transaction *last;
+} Queue;
+
 #endif
