@@ -1,0 +1,47 @@
+# Claude / AI tooling
+.claude/
+
+# Build artifacts
+build/
+bin/
+obj/
+out/
+dist/
+*.o
+*.obj
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+
+# CMake / Make
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+Makefile
+*.make
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Env / local config
+.env
+.env.*
+*.local
+
+# Temp
+tmp/
+temp/
+*.tmp
