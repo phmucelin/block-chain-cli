@@ -83,3 +83,35 @@ Users* get_user_by_uuid(Users* users, char* uuid) {
     }
     return NULL;
 }
+
+static unsigned int hash_uuid(const char* uuid) {
+    unsigned int hash = 0;
+    for (size_t i = 0; i < strlen(uuid); i++) {
+        hash = hash * 31 + uuid[i];
+    }
+    return hash % 100; // Retorna um índice entre 0 e 99
+}
+
+static int inserir_user_hashTable(Users* user) {
+    int endereco = hash_uuid(user->uuid);
+    for (int i = 0; i < 100; i++)
+    {
+        if (users_pos[endereco].ocupado == 0) {
+            users_pos[endereco].user = user;
+            users_pos[endereco].ocupado = 1;
+            return 1; // Sucesso
+        }
+    }
+    return 0; // Falha, tabela cheia
+}
+
+static Users* buscar_user_hashTable(char* uuid) {
+    int endereco = hash_uuid(uuid);
+    for (int i = 0; i < 100; i++)
+    {
+        if (users_pos[endereco].ocupado == 1 && strcmp(users_pos[endereco].user->uuid, uuid) == 0) {
+            return users_pos[endereco].user; // Usuário encontrado
+        }
+    }
+    return NULL; // Usuário não encontrado
+}

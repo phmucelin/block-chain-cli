@@ -24,4 +24,12 @@ typedef struct Users
   struct Users* prox;
 } Users;
 
+typedef struct pos
+{
+    struct Users* user;
+    int ocupado;
+} pos;
+
+static pos users_pos[100]; // Array para armazenar as posições dos usuários
+
 #endif
