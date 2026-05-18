@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: blockchain_db
+    environment:
+      POSTGRES_USER: blockchain
+      POSTGRES_PASSWORD: blockchain123
+      POSTGRES_DB: blockchain_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - blockchain_pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  blockchain_pgdata:
