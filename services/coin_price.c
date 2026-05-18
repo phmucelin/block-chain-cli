@@ -3,7 +3,6 @@
 #include <string.h>
 #include <curl/curl.h>
 #include "../models_functions/coin_price_api.h"
-#include "../models/coin_price.h"
 
 double precoMercado[NUM_COINS];
 

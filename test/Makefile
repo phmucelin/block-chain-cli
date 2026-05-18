@@ -6,6 +6,7 @@ LDFLAGS = -lm
 TEST_USER         = test_user
 TEST_TRANSACTION  = test_transaction
 TEST_COIN         = test_coin
+TEST_COIN_PRICE   = test_coin_price
 TEST_BANK         = test_bank
 TEST_ADMIN        = test_admin
 TEST_HASH         = test_hash
@@ -17,6 +18,7 @@ ALL_TESTS = \
 	$(TEST_USER) \
 	$(TEST_TRANSACTION) \
 	$(TEST_COIN) \
+	$(TEST_COIN_PRICE) \
 	$(TEST_BANK) \
 	$(TEST_ADMIN) \
 	$(TEST_HASH) \
@@ -35,6 +37,9 @@ $(TEST_TRANSACTION): test_transaction_actions.c
 
 $(TEST_COIN): test_coinprice_actions.c
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
+
+$(TEST_COIN_PRICE): test_coin_price.c
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) -lcurl
 
 $(TEST_BANK): test_bank_actions.c
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
@@ -59,6 +64,7 @@ run: $(ALL_TESTS)
 	@echo ""; echo "====== test_user ======";          ./$(TEST_USER)
 	@echo ""; echo "====== test_transaction ======";   ./$(TEST_TRANSACTION)
 	@echo ""; echo "====== test_coin ======";          ./$(TEST_COIN)
+	@echo ""; echo "====== test_coin_price ======";    ./$(TEST_COIN_PRICE)
 	@echo ""; echo "====== test_bank ======";          ./$(TEST_BANK)
 	@echo ""; echo "====== test_admin ======";         ./$(TEST_ADMIN)
 	@echo ""; echo "====== test_hash ======";          ./$(TEST_HASH)

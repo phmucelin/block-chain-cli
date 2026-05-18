@@ -1,15 +1,34 @@
 #include "../test/Unity/src/unity.h"
 #include "../test/Unity/src/unity.c"
-#include "../services/transaction_actions.c"
 
 #include <string.h>
 #include <stdlib.h>
+#include "../models/user_model.h"
+#include "../models/block_model.h"
+#include "../models/transaction_model.h"
+#include "../models/coinType_model.h"
 
-/* stub para funcao referenciada por send_to_block (nao testada aqui) */
+/* stubs declarados antes do include para evitar implicit-declaration */
+int fill_block(Transaction *transaction, Block *block);
+struct Users *get_user_by_uuid(struct Users *users, char *uuid);
+
+#include "../services/transaction_actions.c"
+
+static int fill_block_stub_return = 1;
 int fill_block(Transaction *transaction, Block *block)
 {
     (void)transaction; (void)block;
-    return 0;
+    return fill_block_stub_return;
+}
+
+static Users stub_sender   = { "sender-uuid",   "Sender",   NULL, 25, NULL, NULL, NULL, NULL };
+static Users stub_receiver = { "receiver-uuid", "Receiver", NULL, 25, NULL, NULL, NULL, NULL };
+Users *get_user_by_uuid(Users *users, char *uuid)
+{
+    if (users == NULL || uuid == NULL) return NULL;
+    if (strcmp(uuid, "sender-uuid")   == 0) return &stub_sender;
+    if (strcmp(uuid, "receiver-uuid") == 0) return &stub_receiver;
+    return NULL;
 }
 
 static void free_queue(Queue *queue)
@@ -272,6 +291,148 @@ void test_delete_transaction_middle_element(void)
     free_queue(&queue);
 }
 
+/* ── helpers para can_accept / send_to_block ── */
+
+static Block *make_block_expiring_at(time_t expire)
+{
+    Block *b = (Block *)malloc(sizeof(Block));
+    b->index            = 0;
+    b->created_at       = expire - 3600;
+    b->updated_at       = expire - 3600;
+    b->expire_at        = expire;
+    b->transactions     = NULL;
+    b->num_transactions = 0;
+    b->prox             = NULL;
+    memset(b->previous_hash, 'a', 64); b->previous_hash[64] = '\0';
+    memset(b->hash,          'b', 64); b->hash[64]          = '\0';
+    return b;
+}
+
+static UserCoin *make_coin(void)
+{
+    UserCoin *c = (UserCoin *)malloc(sizeof(UserCoin));
+    c->type    = BTC;
+    c->qtdCoin = 10;
+    c->prox    = NULL;
+    return c;
+}
+
+/* ── can_accept_transaction ── */
+
+void test_can_accept_null_block_returns_zero(void)
+{
+    TEST_ASSERT_EQUAL_INT(0, can_accept_transaction(NULL, time(NULL)));
+}
+
+void test_can_accept_not_expired_returns_one(void)
+{
+    time_t now    = time(NULL);
+    Block *b      = make_block_expiring_at(now + 3600);
+    TEST_ASSERT_EQUAL_INT(1, can_accept_transaction(b, now));
+    free(b);
+}
+
+void test_can_accept_expired_returns_zero(void)
+{
+    time_t now = time(NULL);
+    Block *b   = make_block_expiring_at(now - 1);
+    TEST_ASSERT_EQUAL_INT(0, can_accept_transaction(b, now));
+    free(b);
+}
+
+void test_can_accept_exactly_at_expiry_returns_zero(void)
+{
+    time_t now = time(NULL);
+    Block *b   = make_block_expiring_at(now);
+    TEST_ASSERT_EQUAL_INT(0, can_accept_transaction(b, now));
+    free(b);
+}
+
+/* ── send_to_block ── */
+
+void test_send_to_block_null_users_returns_zero(void)
+{
+    Queue queue  = {0};
+    Block *block = make_block_expiring_at(time(NULL) + 3600);
+    TEST_ASSERT_EQUAL_INT(0, send_to_block(NULL, &queue, block, time(NULL)));
+    free(block);
+}
+
+void test_send_to_block_null_queue_returns_zero(void)
+{
+    Users  users = {0};
+    Block *block = make_block_expiring_at(time(NULL) + 3600);
+    TEST_ASSERT_EQUAL_INT(0, send_to_block(&users, NULL, block, time(NULL)));
+    free(block);
+}
+
+void test_send_to_block_null_block_returns_zero(void)
+{
+    Users  users = {0};
+    Queue  queue = {0};
+    TEST_ASSERT_EQUAL_INT(0, send_to_block(&users, &queue, NULL, time(NULL)));
+}
+
+void test_send_to_block_expired_block_returns_zero(void)
+{
+    Users  users = {0};
+    Queue  queue = {0};
+    time_t now   = time(NULL);
+    Block *block = make_block_expiring_at(now - 1);
+    TEST_ASSERT_EQUAL_INT(0, send_to_block(&users, &queue, block, now));
+    free(block);
+}
+
+void test_send_to_block_empty_queue_returns_zero(void)
+{
+    Users  users = {0};
+    Queue  queue = {0};
+    time_t now   = time(NULL);
+    Block *block = make_block_expiring_at(now + 3600);
+    TEST_ASSERT_EQUAL_INT(0, send_to_block(&users, &queue, block, now));
+    free(block);
+}
+
+void test_send_to_block_valid_transaction_success(void)
+{
+    /* sender e receiver existem via get_user_by_uuid stub */
+    Users  users = {0};
+    Queue  queue = {0};
+    time_t now   = time(NULL);
+    Block *block = make_block_expiring_at(now + 3600);
+
+    UserCoin   *coin = make_coin();
+    Transaction *tx  = new_transaction("sender-uuid", "receiver-uuid", coin, &queue);
+    (void)tx;
+
+    fill_block_stub_return = 1;
+    int result = send_to_block(&users, &queue, block, now);
+    TEST_ASSERT_EQUAL_INT(1, result);
+
+    free(block);
+    free(coin);
+    free_queue(&queue);
+}
+
+void test_send_to_block_unknown_sender_returns_zero(void)
+{
+    Users  users = {0};
+    Queue  queue = {0};
+    time_t now   = time(NULL);
+    Block *block = make_block_expiring_at(now + 3600);
+
+    UserCoin   *coin = make_coin();
+    Transaction *tx  = new_transaction("unknown-uuid", "receiver-uuid", coin, &queue);
+    (void)tx;
+
+    int result = send_to_block(&users, &queue, block, now);
+    TEST_ASSERT_EQUAL_INT(0, result);
+
+    free(block);
+    free(coin);
+    free_queue(&queue);
+}
+
 int main(void)
 {
     UNITY_BEGIN();
@@ -288,5 +449,18 @@ int main(void)
     RUN_TEST(test_delete_transaction_null_list_returns_null);
     RUN_TEST(test_delete_transaction_only_element_returns_null);
     RUN_TEST(test_delete_transaction_middle_element);
+
+    RUN_TEST(test_can_accept_null_block_returns_zero);
+    RUN_TEST(test_can_accept_not_expired_returns_one);
+    RUN_TEST(test_can_accept_expired_returns_zero);
+    RUN_TEST(test_can_accept_exactly_at_expiry_returns_zero);
+
+    RUN_TEST(test_send_to_block_null_users_returns_zero);
+    RUN_TEST(test_send_to_block_null_queue_returns_zero);
+    RUN_TEST(test_send_to_block_null_block_returns_zero);
+    RUN_TEST(test_send_to_block_expired_block_returns_zero);
+    RUN_TEST(test_send_to_block_empty_queue_returns_zero);
+    RUN_TEST(test_send_to_block_valid_transaction_success);
+    RUN_TEST(test_send_to_block_unknown_sender_returns_zero);
     return UNITY_END();
 }
