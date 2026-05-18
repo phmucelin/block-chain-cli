@@ -3,6 +3,18 @@
 #include <stdlib.h>
 #include "db.h"
 
+/*
+  Resumo do setup
+  1. Subir o banco:
+  docker compose up -d
+  2. Verificar que subiu:
+  docker compose ps
+  # ou conectar direto:
+  docker exec -it blockchain_db psql -U blockchain -d blockchain_db
+  3. Compilar código C com libpq:
+  make db_test
+*/
+
 #define CONN_STR "user=blockchain password=blockchain123 dbname=blockchain_db host=localhost port=5434"
 
 PGconn* try_connect_db()
