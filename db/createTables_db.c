@@ -65,7 +65,6 @@ int create_tables_blocks_db()
         "  blockHash            VARCHAR(64) NOT NULL UNIQUE,"
         "  previousHash         VARCHAR(64),"
         "  timestamp            TIMESTAMP   NOT NULL,"
-        "  nonce                INTEGER,"
         "  transactionsID       VARCHAR(64),"
         "  numberOfTransactions INTEGER,"
         "  createdAt            TIMESTAMP,"
