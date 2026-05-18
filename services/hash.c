@@ -3,14 +3,15 @@
 #include <string.h>
 #include "../models_functions/hash.h"
 
-char* hash(const char* input) {
-    char* hash = (char*)malloc(33); 
-    if (hash == NULL) {
-        return NULL; 
-    }
-    for (size_t i = 0; i < 32; i++) {
-        hash[i] = "0121104592XcDKlPq7s8a9b4e6f3g5h0i1j2mnoqrstulkocUiABEFGHIJYZ"[rand() % 16];
-    }
-    hash[32] = '\0';
-    return hash;
-}
+char* hash(const char* input) {                                                                        
+      if (!input) return NULL;                                                                           
+      unsigned long h = 2166136261UL;  // FNV offset basis                                               
+      while (*input)                                                                                   
+          h = (h ^ (unsigned char)*input++) * 16777619UL;  // FNV prime                                  
+                                                                       
+      char* out = malloc(17);  // 16 hex chars + '\0'                                                    
+      if (!out) return NULL;                                
+      snprintf(out, 17, "%016lx", h);                                                                    
+      return out;                                                                                        
+  }  
+
