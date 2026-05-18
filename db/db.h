@@ -6,7 +6,7 @@
 typedef struct Block Block;
 typedef struct Transaction Transaction;
 
-int try_connect_db(PGconn **conn);
+int try_connect_db();
 
 int disconnect_db(PGconn *conn);
 
