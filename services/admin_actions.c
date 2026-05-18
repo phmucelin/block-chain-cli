@@ -4,8 +4,6 @@
 #include "../models/admin_model.h"
 #include "../models/bank_model.h"
 #include "../models/user_model.h"
-#include "../services/user_actions.c"
-#include "../services/bank_actions.c"
 
 /*
  * Fix: a lista de admins precisa de persistencia em memoria.
@@ -14,6 +12,7 @@
  * valida — comportamento indefinido garantido (segfault ou loop infinito).
  * Solucao: lista estatica global gerenciada por create_admin().
  */
+
 static Admin* admin_list = NULL;
 
 int verify_admin(char* uuid)

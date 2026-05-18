@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include "../models/coinType_model.h"
 #include "../models/user_model.h"
-#include "../services/user_actions.c"
 #include "../models_functions/coins_law.h"
 
 double getPreco(CoinType type);

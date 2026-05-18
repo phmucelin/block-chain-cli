@@ -6,8 +6,7 @@
 #include "../models/coinType_model.h"
 #include "../models/user_model.h"
 #include "../models/block_model.h"
-#include "../services/user_actions.c"
-#include "../services/hashpass.c"
+
 
 static Transaction *dequeue_transaction(Queue *queue)
 {

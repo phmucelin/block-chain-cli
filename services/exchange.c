@@ -3,7 +3,7 @@
 #include <string.h>
 #include "../models/exchange_model.h"
 #include "../models_functions/exchange.h"
-#include "../services/user_actions.c"
+
 
 Exchange* register_exchanges(char* name, int qtdClients, char* addres, char* country)
 {

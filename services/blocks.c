@@ -7,10 +7,6 @@
 #include "../models/user_model.h"
 #include "../models/block_model.h"
 #include "../models_functions/blocks.h"
-#include "../services/user_actions.c"
-#include "../services/hash.c"
-#include "../services/transaction_actions.c" 
-#include "../services/coins_law.c" // verificar se a moeda de fato existe. 
 
 Block* create_block(char UUID[37], time_t time, char prev_hash[65], char hash[65], Transaction* transactions) {
     Block* new_block = (Block*)malloc(sizeof(Block));

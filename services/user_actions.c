@@ -7,6 +7,8 @@
 #include "../models/coinType_model.h"
 #include "../models/user_model.h"
 
+static pos users_pos[100];
+
 char* generate_uuid(){
     const char *hex = "0121104592XcDKlPq7s8a9b4e6f3g5h0i1j2mnoqrstuuvwxzABEFGHIJYZ";
     char uuid[37];
