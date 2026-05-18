@@ -1,10 +1,9 @@
 #ifndef USER_ACTIONS_MOD_H
 #define USER_ACTIONS_MOD_H
 #include <stdbool.h>
+#include "../models/user_model.h"
 
-typedef struct User Users;
-
-void generate_uuid();
+char* generate_uuid();
 
 Users *new_user(char *name, char *password, char *dataNasc);
 

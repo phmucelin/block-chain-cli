@@ -5,7 +5,9 @@ typedef struct Admin Admin;
 typedef struct Bank Bank;
 typedef struct Users Users;
 
-int verify_isAdmin(char* UUID); // Verify by uuid, we can have another user with the same name of a admin.
+int verify_admin(char* uuid);
+
+Admin* get_admin(char* uuid);
 
 Admin* create_admin(char* name, char* birthday, char* passKey);
 

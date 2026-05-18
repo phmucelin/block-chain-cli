@@ -1,17 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "../models_functions/admin_actions.h"
+#include "../models_functions/user_actions_mod.h"
 #include "../models/admin_model.h"
 #include "../models/bank_model.h"
 #include "../models/user_model.h"
-
-/*
- * Fix: a lista de admins precisa de persistencia em memoria.
- * verify_admin() e get_admin() criavam um Admin via malloc() (memoria nao
- * inicializada) e percorriam seus campos uuid/prox como se fosse uma lista
- * valida — comportamento indefinido garantido (segfault ou loop infinito).
- * Solucao: lista estatica global gerenciada por create_admin().
- */
 
 static Admin* admin_list = NULL;
 
