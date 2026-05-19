@@ -95,3 +95,30 @@ int save_blocks_info_db(Block* b)
     PQfinish(conn);
     return ok;
 }
+
+int save_tables_relation_coins_user_db(Users* u)
+{
+    if(u == NULL || strlen(u->uuid) <= 1 || u->uuid == NULL || u->coins->type == NULL || u->coins->qtdCoin == 0)
+        return 0; // error, querendo salvar infos null ou invalidas no banco
+    PGconn *conn = try_connect_db();
+    if (!conn)
+        return 0;
+    const char* query =
+        "INSERT INTO relation_coins_users (userId, coin_name, qtd_coin) "
+        "VALUES ($1, $2, $3) ";
+    // preparando parametros para a query
+    const char* params[3];
+        params[0] = u->uuid;
+        params[1] = coin_type_str[t->coin->type];,
+        params[2] = u->coins->qtdCoin;
+
+    // realizando a execucao da query, verificando com o PGresult res, para retornar se a insercao foi OK ou nao.
+    
+    PGresult *res = PQexecParams(conn, query, 3, NULL, params, NULL, NULL, 0);
+    int ok = PQresultStatus(res) == PGRES_COMMAND_OK;
+    if (!ok)
+        fprintf(stderr, "Insert relation to users and coins failed: %s\n", PQerrorMessage(conn));
+    PQclear(res);
+    PQfinish(conn);
+    return ok;
+}

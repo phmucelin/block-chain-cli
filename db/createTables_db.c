@@ -79,3 +79,50 @@ int create_tables_blocks_db()
     PQfinish(conn);
     return ok;
 }
+
+int create_tables_users_db()
+{
+    PGconn *conn = try_connect_db();
+    if (!conn)
+        return 0;
+
+    PGresult *res = PQexec(conn,
+        "CREATE TABLE IF NOT EXISTS users ("
+        "  id        SERIAL PRIMARY KEY,"
+        "  name    VARCHAR(64) NOT NULL,"
+        "  hashpass  VARCHAR(64) NOT NULL,"
+        "  age  INTEGER     NOT NULL,"
+        "  bank_name  VARCHAR(8)  NOT NULL"
+        ")");
+
+    int ok = PQresultStatus(res) == PGRES_COMMAND_OK;
+    if (!ok)
+        fprintf(stderr, "Create users table failed: %s\n", PQerrorMessage(conn));
+    PQclear(res);
+    PQfinish(conn);
+    return ok;
+}
+
+int create_tables_relation_coins_user_db()
+{
+    PGconn *conn = try_connect_db();
+    if(!conn) 
+        return 0;
+    PGresult *res = PQexec(conn, 
+        "CREATE TABLE IF NOT EXISTS relation_transaction_users("
+        "   userId     SERIAL PRIMARY KEY,"
+        "   coin_name  VARCHAR(20) NOT NULL,"
+        "   qtd_coin   INTEGER NOT NULL"
+        ")");
+    int ok = PQresultStatus(res) == PGRES_COMMAND_OK;
+    if(!ok)
+        fprintf(stderr, "Create relation table failed: %s\n", PQerrorMessage(conn));
+    PQclear(res);
+    PQfinish(conn);
+    return ok;
+}
+
+/*
+coin_type_str
+params[3] = coin_type_str[t->coin->type];
+*/

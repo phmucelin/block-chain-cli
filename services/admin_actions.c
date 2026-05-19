@@ -11,9 +11,9 @@ static Admin* admin_list = NULL;
 
 int verify_admin(char* uuid)
 {
-    if (!uuid) return 0; // Fix: guard contra uuid NULL
+    if (!uuid) return 0; // guard contra uuid NULL
 
-    Admin* current = admin_list; // Fix: percorre a lista real, nao malloc() lixo
+    Admin* current = admin_list; // percorre a lista real, nao malloc() lixo
     while (current != NULL)
     {
         if (strcmp(current->uuid, uuid) == 0)
@@ -27,17 +27,17 @@ int verify_admin(char* uuid)
 
 Admin* create_admin(char* name, char* birthday, char* passKey)
 {
-    if (!name || !birthday || !passKey) return NULL; // Fix: guard contra parametros NULL
+    if (!name || !birthday || !passKey) return NULL; // guard contra parametros NULL
 
     Admin* newAdmin = (Admin*)malloc(sizeof(Admin));
     if (newAdmin == NULL) {
         return NULL;
     }
     newAdmin->name = name;
-    newAdmin->uuid = generate_uuid(); // Fix: gera UUID antes de chamar verify_admin
+    newAdmin->uuid = generate_uuid(); // gera UUID antes de chamar verify_admin
     newAdmin->prox = NULL;
 
-    if (verify_admin(newAdmin->uuid)) { // Fix: agora verifica contra a lista real
+    if (verify_admin(newAdmin->uuid)) { // agora verifica contra a lista real
         free(newAdmin->uuid);
         free(newAdmin);
         return NULL; // Admin ja existe (colisao de UUID)
@@ -80,9 +80,9 @@ void list_users(Users* u)
 
 Admin* get_admin(char* uuid)
 {
-    if (!uuid) return NULL; // Fix: guard contra uuid NULL
+    if (!uuid) return NULL; // guard contra uuid NULL
 
-    Admin* current = admin_list; // Fix: percorre a lista real, nao malloc() lixo
+    Admin* current = admin_list; // percorre a lista real, nao malloc() lixo
     while (current != NULL)
     {
         if (strcmp(current->uuid, uuid) == 0)
@@ -100,7 +100,7 @@ int delete_user(Users** head, const char* name, const char* uuid, const char* ad
         return 0;
     }
 
-    Admin* admin = get_admin((char*)admin_uuid); // Fix: get_admin agora funciona corretamente
+    Admin* admin = get_admin((char*)admin_uuid); // get_admin agora funciona corretamente
     if (!admin) {
         return 0;
     }
