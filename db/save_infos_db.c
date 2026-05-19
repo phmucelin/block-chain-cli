@@ -96,6 +96,34 @@ int save_blocks_info_db(Block* b)
     return ok;
 }
 
+int save_users_db(Users* u)
+{
+    if(u == NULL || strlen(u->uuid) <= 1 || u->uuid == NULL || u->name == NULL || u->age == NULL || u->bank == NULL)
+        return 0; // error, querendo salvar infos null ou invalidas no banco
+    
+    PGconn *conn = try_connect_db();
+    if(!conn)
+        return 0;
+    const char* query = 
+        "INSERT INTO users (id, name, hashpass, age, bank_name) "
+        "VALUES ($1, $2, $3, $4, $5) ";
+    const char* params[5];
+        params[0] = u->uuid;
+        params[1] = u->name;
+        params[2] = u->hashPass;
+        params[3] = u->age;
+        params[4] = u->bank->name;
+    
+    
+    PGresult *res = PQexecParams(conn, query, 5, NULL, params, NULL, NULL, 0);
+    int ok = PQresultStatus(res) == PGRES_COMMAND_OK;
+    if (!ok)
+        fprintf(stderr, "Insert to users table failed: %s\n", PQerrorMessage(conn));
+    PQclear(res);
+    PQfinish(conn);
+    return ok;
+}
+
 int save_tables_relation_coins_user_db(Users* u)
 {
     if(u == NULL || strlen(u->uuid) <= 1 || u->uuid == NULL || u->coins->type == NULL || u->coins->qtdCoin == 0)

@@ -20,7 +20,7 @@ typedef struct Users
   int age;
   struct Bank* bank;
   struct Transaction* transaction_id;
-  UserCoin* coins;
+  UserCoin* coigens;
   struct Users* prox;
 } Users;
 

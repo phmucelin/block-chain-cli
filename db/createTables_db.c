@@ -121,8 +121,3 @@ int create_tables_relation_coins_user_db()
     PQfinish(conn);
     return ok;
 }
-
-/*
-coin_type_str
-params[3] = coin_type_str[t->coin->type];
-*/
