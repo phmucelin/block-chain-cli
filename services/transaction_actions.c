@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include "../models_functions/user_actions_mod.h"
+#include "../models_functions/blocks.h"    
 #include "../models/transaction_model.h"
 #include "../models/coinType_model.h"
 #include "../models/user_model.h"

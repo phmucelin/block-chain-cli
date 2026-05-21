@@ -3,8 +3,7 @@
 #include "../models/coinType_model.h"
 #include "../models/user_model.h"
 #include "../models_functions/coins_law.h"
-
-double getPreco(CoinType type);
+#include "../models_functions/coin_price_api.h"
 
 static UserCoin *find_coin(UserCoin *coins, CoinType type)
 {
@@ -41,9 +40,9 @@ static UserCoin *append_coin(UserCoin *coins, CoinType type)
     return new_coin;
 }
 
-bool merge_coins(Users *u, CoinType source_type, int qtd_coins, CoinType dest_type, int qtd_coins_destine)
+bool merge_coins(Users *u, CoinType source_type, double qtd_coins, CoinType dest_type, double qtd_coins_destine)
 {
-    if (u == NULL || u->coins == NULL || qtd_coins <= 0 || qtd_coins_destine <= 0) {
+    if (u == NULL || u->coins == NULL || qtd_coins <= 0.0 || qtd_coins_destine <= 0.0) {
         return false;
     }
 
@@ -62,13 +61,13 @@ bool merge_coins(Users *u, CoinType source_type, int qtd_coins, CoinType dest_ty
         return false;
     }
 
-    double total_value = (double)qtd_coins * source_price;
-    double required_value = (double)qtd_coins_destine * dest_price;
+    double total_value = qtd_coins * source_price;
+    double required_value = qtd_coins_destine * dest_price;
     if (total_value < required_value) {
         return false;
     }
 
-    int qtd_receber = (int)(total_value / dest_price);
+    double qtd_receber = total_value / dest_price;
     if (qtd_receber < qtd_coins_destine) {
         return false;
     }
@@ -85,4 +84,21 @@ bool merge_coins(Users *u, CoinType source_type, int qtd_coins, CoinType dest_ty
     dest_coin->qtdCoin += qtd_receber;
 
     return true;
+}
+
+int buy_coins(Users* u, CoinType type, double qtd) {
+    if (!u || qtd <= 0.0) return 0;
+    double price = getPreco(type);
+    if (price <= 0.0) return 0;
+    double total = price * qtd;
+    if (u->balance < total) return 0;
+    UserCoin* coin = find_coin(u->coins, type);
+    if (!coin) {
+        coin = append_coin(u->coins, type);
+        if (!coin) return 0;
+        if (!u->coins) u->coins = coin;
+    }
+    u->balance -= total;
+    coin->qtdCoin += qtd;
+    return 1;
 }

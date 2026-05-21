@@ -26,7 +26,7 @@ int save_transactions_info_db(Transaction* t)
         "ON CONFLICT (receipt) DO NOTHING;";
 
     char qtd_str[64];
-    snprintf(qtd_str, sizeof(qtd_str), "%d", t->coin->qtdCoin);
+    snprintf(qtd_str, sizeof(qtd_str), "%.8f", t->coin->qtdCoin);
 
     char timestamp_str[64];
     snprintf(timestamp_str, sizeof(timestamp_str), "%ld", (long)time(NULL));
@@ -73,9 +73,6 @@ int save_blocks_info_db(Block* b)
     snprintf(expire_str, sizeof(expire_str), "%ld", (long)(time(NULL) + 3600)); // Expire in 1 hour
     char num_tx_str[64];
     snprintf(num_tx_str, sizeof(num_tx_str), "%d", b->num_transactions);
-    // Garantir que os hashes não sejam NULL para evitar falhas na inserção
-    if (b->hash == NULL) { fprintf(stderr, "Block hash is NULL\n"); PQfinish(conn); return 0; }
-    if (b->previous_hash == NULL) { fprintf(stderr, "Block previous hash is NULL\n"); PQfinish(conn); return 0; }
     // preparando parametros para a query
     const char* params[6] = {
         b->hash,
@@ -98,24 +95,30 @@ int save_blocks_info_db(Block* b)
 
 int save_users_db(Users* u)
 {
-    if(u == NULL || strlen(u->uuid) <= 1 || u->uuid == NULL || u->name == NULL || u->age == NULL || u->bank == NULL)
-        return 0; // error, querendo salvar infos null ou invalidas no banco
-    
-    PGconn *conn = try_connect_db();
-    if(!conn)
+    if (!u || !u->uuid || !u->cpf || !u->name || !u->hashPass)
         return 0;
-    const char* query = 
-        "INSERT INTO users (id, name, hashpass, age, bank_name) "
-        "VALUES ($1, $2, $3, $4, $5) ";
-    const char* params[5];
-        params[0] = u->uuid;
-        params[1] = u->name;
-        params[2] = u->hashPass;
-        params[3] = u->age;
-        params[4] = u->bank->name;
-    
-    
-    PGresult *res = PQexecParams(conn, query, 5, NULL, params, NULL, NULL, 0);
+
+    PGconn *conn = try_connect_db();
+    if (!conn)
+        return 0;
+
+    const char* query =
+        "INSERT INTO users (uuid, cpf, name, hashpass, age, balance, bank_name) "
+        "VALUES ($1, $2, $3, $4, $5, $6, $7) "
+        "ON CONFLICT (uuid) DO NOTHING;";
+
+    char age_str[16];
+    snprintf(age_str, sizeof(age_str), "%d", u->age);
+    char balance_str[32];
+    snprintf(balance_str, sizeof(balance_str), "%.2f", u->balance);
+    const char* bank_name = (u->bank && u->bank->name) ? u->bank->name : "BlockBank";
+
+    const char* params[7] = {
+        u->uuid, u->cpf, u->name, u->hashPass,
+        age_str, balance_str, bank_name
+    };
+
+    PGresult *res = PQexecParams(conn, query, 7, NULL, params, NULL, NULL, 0);
     int ok = PQresultStatus(res) == PGRES_COMMAND_OK;
     if (!ok)
         fprintf(stderr, "Insert to users table failed: %s\n", PQerrorMessage(conn));
@@ -124,9 +127,45 @@ int save_users_db(Users* u)
     return ok;
 }
 
+Users* load_users_from_db(void)
+{
+    PGconn *conn = try_connect_db();
+    if (!conn)
+        return NULL;
+
+    PGresult *res = PQexec(conn,
+        "SELECT uuid, cpf, name, hashpass, age, balance FROM users;");
+
+    if (PQresultStatus(res) != PGRES_TUPLES_OK) {
+        fprintf(stderr, "Load users failed: %s\n", PQerrorMessage(conn));
+        PQclear(res);
+        PQfinish(conn);
+        return NULL;
+    }
+
+    Users* head = NULL;
+    int rows = PQntuples(res);
+    for (int i = rows - 1; i >= 0; i--) {
+        Users* u = (Users*)calloc(1, sizeof(Users));
+        if (!u) break;
+        u->uuid     = strdup(PQgetvalue(res, i, 0));
+        u->cpf      = strdup(PQgetvalue(res, i, 1));
+        u->name     = strdup(PQgetvalue(res, i, 2));
+        u->hashPass = strdup(PQgetvalue(res, i, 3));
+        u->age      = atoi(PQgetvalue(res, i, 4));
+        u->balance  = atof(PQgetvalue(res, i, 5));
+        u->prox     = head;
+        head        = u;
+    }
+
+    PQclear(res);
+    PQfinish(conn);
+    return head;
+}
+
 int save_tables_relation_coins_user_db(Users* u)
 {
-    if(u == NULL || strlen(u->uuid) <= 1 || u->uuid == NULL || u->coins->type == NULL || u->coins->qtdCoin == 0)
+    if(u == NULL || strlen(u->uuid) <= 1 || u->uuid == NULL || u->coins->qtdCoin == 0)
         return 0; // error, querendo salvar infos null ou invalidas no banco
     PGconn *conn = try_connect_db();
     if (!conn)
@@ -135,10 +174,12 @@ int save_tables_relation_coins_user_db(Users* u)
         "INSERT INTO relation_coins_users (userId, coin_name, qtd_coin) "
         "VALUES ($1, $2, $3) ";
     // preparando parametros para a query
+    char qtd_str2[32];
+    snprintf(qtd_str2, sizeof(qtd_str2), "%.8f", u->coins->qtdCoin);
     const char* params[3];
         params[0] = u->uuid;
-        params[1] = coin_type_str[t->coin->type];,
-        params[2] = u->coins->qtdCoin;
+        params[1] = coin_type_str[u->coins->type];
+        params[2] = qtd_str2;
 
     // realizando a execucao da query, verificando com o PGresult res, para retornar se a insercao foi OK ou nao.
     

@@ -39,7 +39,7 @@ int create_tables_transactions_db()
         "  id        SERIAL PRIMARY KEY,"
         "  sender    VARCHAR(64) NOT NULL,"
         "  receiver  VARCHAR(64) NOT NULL,"
-        "  qtdCoins  INTEGER     NOT NULL,"
+        "  qtdCoins  DOUBLE PRECISION NOT NULL,"
         "  coinType  VARCHAR(8)  NOT NULL,"
         "  timestamp TIMESTAMP   NOT NULL,"
         "  receipt   INTEGER     NOT NULL UNIQUE"
@@ -88,11 +88,13 @@ int create_tables_users_db()
 
     PGresult *res = PQexec(conn,
         "CREATE TABLE IF NOT EXISTS users ("
-        "  id        SERIAL PRIMARY KEY,"
-        "  name    VARCHAR(64) NOT NULL,"
-        "  hashpass  VARCHAR(64) NOT NULL,"
-        "  age  INTEGER     NOT NULL,"
-        "  bank_name  VARCHAR(8)  NOT NULL"
+        "  uuid      VARCHAR(37)      PRIMARY KEY,"
+        "  cpf       VARCHAR(14)      NOT NULL UNIQUE,"
+        "  name      VARCHAR(64)      NOT NULL,"
+        "  hashpass  VARCHAR(64)      NOT NULL,"
+        "  age       INTEGER          NOT NULL,"
+        "  balance   DOUBLE PRECISION NOT NULL DEFAULT 0,"
+        "  bank_name VARCHAR(64)      NOT NULL"
         ")");
 
     int ok = PQresultStatus(res) == PGRES_COMMAND_OK;
@@ -112,7 +114,7 @@ int create_tables_relation_coins_user_db()
         "CREATE TABLE IF NOT EXISTS relation_transaction_users("
         "   userId     SERIAL PRIMARY KEY,"
         "   coin_name  VARCHAR(20) NOT NULL,"
-        "   qtd_coin   INTEGER NOT NULL"
+        "   qtd_coin   DOUBLE PRECISION NOT NULL"
         ")");
     int ok = PQresultStatus(res) == PGRES_COMMAND_OK;
     if(!ok)

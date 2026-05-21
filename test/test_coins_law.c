@@ -33,7 +33,7 @@ void tearDown(void) {}
 
 /* ── helpers ── */
 
-static Users *make_user_with_coin(CoinType type, int qty)
+static Users *make_user_with_coin(CoinType type, double qty)
 {
     Users *u  = (Users *)malloc(sizeof(Users));
     u->uuid   = "uuid-test";
@@ -174,7 +174,7 @@ void test_merge_source_coin_decremented(void)
 {
     Users *u = make_user_with_coin(BTC, 5);
     merge_coins(u, BTC, 2, ETH, 1);
-    TEST_ASSERT_EQUAL_INT(3, u->coins->qtdCoin);
+    TEST_ASSERT_DOUBLE_WITHIN(0.01, 3.0, u->coins->qtdCoin);
     free_user(u);
 }
 
@@ -198,11 +198,11 @@ void test_merge_dest_amount_correct(void)
     Users *u = make_user_with_coin(BTC, 1);
     merge_coins(u, BTC, 1, ETH, 1);
 
-    int eth_qty = 0;
+    double eth_qty = 0.0;
     for (UserCoin *c = u->coins; c; c = c->prox) {
         if (c->type == ETH) { eth_qty = c->qtdCoin; break; }
     }
-    TEST_ASSERT_EQUAL_INT(18, eth_qty);
+    TEST_ASSERT_DOUBLE_WITHIN(0.01, 18.0, eth_qty);
     free_user(u);
 }
 
@@ -212,17 +212,17 @@ void test_merge_existing_dest_coin_incremented(void)
     Users *u  = make_user_with_coin(BTC, 1);
     UserCoin *eth = (UserCoin *)malloc(sizeof(UserCoin));
     eth->type    = ETH;
-    eth->qtdCoin = 5;
+    eth->qtdCoin = 5.0;
     eth->prox    = NULL;
     u->coins->prox = eth;
 
     merge_coins(u, BTC, 1, ETH, 1);
 
-    int eth_qty = 0;
+    double eth_qty = 0.0;
     for (UserCoin *c = u->coins; c; c = c->prox) {
         if (c->type == ETH) { eth_qty = c->qtdCoin; break; }
     }
-    TEST_ASSERT_GREATER_THAN(5, eth_qty);
+    TEST_ASSERT_GREATER_THAN(5.0, eth_qty);
     free_user(u);
 }
 
@@ -233,11 +233,11 @@ void test_merge_btc_to_usdt(void)
     bool result = merge_coins(u, BTC, 1, USDT, 1);
     TEST_ASSERT_TRUE(result);
 
-    int usdt_qty = 0;
+    double usdt_qty = 0.0;
     for (UserCoin *c = u->coins; c; c = c->prox) {
         if (c->type == USDT) { usdt_qty = c->qtdCoin; break; }
     }
-    TEST_ASSERT_EQUAL_INT(45000, usdt_qty);
+    TEST_ASSERT_DOUBLE_WITHIN(0.01, 45000.0, usdt_qty);
     free_user(u);
 }
 
@@ -247,11 +247,11 @@ void test_merge_eth_to_usdt(void)
     Users *u = make_user_with_coin(ETH, 1);
     merge_coins(u, ETH, 1, USDT, 1);
 
-    int usdt_qty = 0;
+    double usdt_qty = 0.0;
     for (UserCoin *c = u->coins; c; c = c->prox) {
         if (c->type == USDT) { usdt_qty = c->qtdCoin; break; }
     }
-    TEST_ASSERT_EQUAL_INT(2500, usdt_qty);
+    TEST_ASSERT_DOUBLE_WITHIN(0.01, 2500.0, usdt_qty);
     free_user(u);
 }
 

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Test Results — 18 May 2026</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f1117; color: #e2e8f0; padding: 2rem; }
+    h1 { font-size: 1.6rem; margin-bottom: 0.25rem; color: #f8fafc; }
+    .subtitle { color: #94a3b8; font-size: 0.9rem; margin-bottom: 2rem; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; margin-bottom: 2.5rem; }
+    .card { background: #1e2535; border-radius: 10px; padding: 1.2rem 1.5rem; border: 1px solid #2d3748; }
+    .card .value { font-size: 2.4rem; font-weight: 700; line-height: 1; }
+    .card .label { font-size: 0.78rem; color: #94a3b8; margin-top: 0.3rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .green { color: #4ade80; }
+    .red   { color: #f87171; }
+    .blue  { color: #60a5fa; }
+    .yellow{ color: #fbbf24; }
+    .suite { background: #1e2535; border-radius: 10px; margin-bottom: 1.5rem; border: 1px solid #2d3748; overflow: hidden; }
+    .suite-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; background: #252d3d; border-bottom: 1px solid #2d3748; }
+    .suite-title { font-size: 1rem; font-weight: 600; color: #e2e8f0; }
+    .suite-title .file { font-size: 0.78rem; color: #94a3b8; font-weight: 400; margin-left: 0.5rem; }
+    .badge { font-size: 0.75rem; font-weight: 700; padding: 0.2rem 0.7rem; border-radius: 99px; }
+    .badge-green { background: #14532d; color: #4ade80; }
+    .badge-red   { background: #450a0a; color: #f87171; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; font-size: 0.72rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; padding: 0.6rem 1.5rem; border-bottom: 1px solid #2d3748; }
+    td { padding: 0.55rem 1.5rem; font-size: 0.85rem; border-bottom: 1px solid #1a2133; }
+    tr:last-child td { border-bottom: none; }
+    .status-pass { color: #4ade80; font-weight: 600; }
+    .status-fail { color: #f87171; font-weight: 600; }
+    .fn { font-family: 'Courier New', monospace; color: #93c5fd; font-size: 0.82rem; }
+    .section-label { color: #64748b; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.4rem 1.5rem; background: #18202e; }
+    .footer { margin-top: 2.5rem; font-size: 0.78rem; color: #475569; text-align: center; }
+  </style>
+</head>
+<body>
+
+<h1>Resultados dos Testes</h1>
+<p class="subtitle">Novas funções — blockchain-c-cli &nbsp;|&nbsp; 18 May 2026</p>
+
+<div class="summary-grid">
+  <div class="card"><div class="value green">43</div><div class="label">Total PASS</div></div>
+  <div class="card"><div class="value red">0</div><div class="label">Falhas</div></div>
+  <div class="card"><div class="value blue">2</div><div class="label">Suites</div></div>
+  <div class="card"><div class="value yellow">100%</div><div class="label">Taxa de Sucesso</div></div>
+</div>
+
+<!-- ─── SUITE 1: coin_price ─────────────────────────────────────────────────── -->
+<div class="suite">
+  <div class="suite-header">
+    <span class="suite-title">coin_price <span class="file">test/test_coin_price.c</span></span>
+    <span class="badge badge-green">19 / 19 PASS</span>
+  </div>
+  <table>
+    <thead><tr><th>#</th><th>Função testada</th><th>Teste</th><th>Resultado</th></tr></thead>
+    <tbody>
+      <tr><td class="section-label" colspan="4">extrairPreco</td></tr>
+      <tr><td>1</td><td class="fn">extrairPreco()</td><td>entrada NULL retorna -1.0</td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td class="fn">extrairPreco()</td><td>string vazia retorna -1.0</td><td class="status-pass">PASS</td></tr>
+      <tr><td>3</td><td class="fn">extrairPreco()</td><td>JSON sem chave "usd" retorna -1.0</td><td class="status-pass">PASS</td></tr>
+      <tr><td>4</td><td class="fn">extrairPreco()</td><td>JSON válido retorna preço correto (45000.5)</td><td class="status-pass">PASS</td></tr>
+      <tr><td>5</td><td class="fn">extrairPreco()</td><td>preço inteiro no JSON</td><td class="status-pass">PASS</td></tr>
+      <tr><td>6</td><td class="fn">extrairPreco()</td><td>preço zero é rejeitado (-1.0)</td><td class="status-pass">PASS</td></tr>
+      <tr><td>7</td><td class="fn">extrairPreco()</td><td>preço negativo é rejeitado (-1.0)</td><td class="status-pass">PASS</td></tr>
+      <tr><td>8</td><td class="fn">extrairPreco()</td><td>valor malformado (sscanf falha) retorna -1.0</td><td class="status-pass">PASS</td></tr>
+      <tr><td>9</td><td class="fn">extrairPreco()</td><td>USDT = 1.0 USD aceito</td><td class="status-pass">PASS</td></tr>
+
+      <tr><td class="section-label" colspan="4">extrairPrecoBTC (alias)</td></tr>
+      <tr><td>10</td><td class="fn">extrairPrecoBTC()</td><td>delega corretamente para extrairPreco</td><td class="status-pass">PASS</td></tr>
+      <tr><td>11</td><td class="fn">extrairPrecoBTC()</td><td>NULL retorna -1.0</td><td class="status-pass">PASS</td></tr>
+
+      <tr><td class="section-label" colspan="4">write_callback</td></tr>
+      <tr><td>12</td><td class="fn">write_callback()</td><td>retorna tamanho correto do chunk</td><td class="status-pass">PASS</td></tr>
+      <tr><td>13</td><td class="fn">write_callback()</td><td>dados são copiados para o buffer</td><td class="status-pass">PASS</td></tr>
+      <tr><td>14</td><td class="fn">write_callback()</td><td>chunks acumulam em sequência ("foo"+"bar"="foobar")</td><td class="status-pass">PASS</td></tr>
+      <tr><td>15</td><td class="fn">write_callback()</td><td>buffer sempre null-terminated após escrita</td><td class="status-pass">PASS</td></tr>
+
+      <tr><td class="section-label" colspan="4">getPreco</td></tr>
+      <tr><td>16</td><td class="fn">getPreco()</td><td>tipo negativo retorna -1.0</td><td class="status-pass">PASS</td></tr>
+      <tr><td>17</td><td class="fn">getPreco()</td><td>tipo = NUM_COINS (fora do range) retorna -1.0</td><td class="status-pass">PASS</td></tr>
+      <tr><td>18</td><td class="fn">getPreco()</td><td>BTC inicial é 0.0 antes de qualquer atualização</td><td class="status-pass">PASS</td></tr>
+      <tr><td>19</td><td class="fn">getPreco()</td><td>retorna valor correto de precoMercado[]</td><td class="status-pass">PASS</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ─── SUITE 2: transaction — novas funções ──────────────────────────────── -->
+<div class="suite">
+  <div class="suite-header">
+    <span class="suite-title">transaction_actions — novas funções <span class="file">test/test_transaction_actions.c</span></span>
+    <span class="badge badge-green">24 / 24 PASS</span>
+  </div>
+  <table>
+    <thead><tr><th>#</th><th>Função testada</th><th>Teste</th><th>Resultado</th></tr></thead>
+    <tbody>
+      <tr><td class="section-label" colspan="4">new_transaction / get / delete (pré-existentes, regressão)</td></tr>
+      <tr><td>1</td><td class="fn">new_transaction()</td><td>cria transação válida com todos os campos</td><td class="status-pass">PASS</td></tr>
+      <tr><td>2</td><td class="fn">new_transaction()</td><td>parâmetros NULL retornam NULL</td><td class="status-pass">PASS</td></tr>
+      <tr><td>3</td><td class="fn">new_transaction()</td><td>datetime é preenchido (ano > 120)</td><td class="status-pass">PASS</td></tr>
+      <tr><td>4</td><td class="fn">new_transaction()</td><td>receipt em range [0, 1000002)</td><td class="status-pass">PASS</td></tr>
+      <tr><td>5</td><td class="fn">new_transaction()</td><td>prox é NULL após criação</td><td class="status-pass">PASS</td></tr>
+      <tr><td>6</td><td class="fn">get_transaction_by_receipt()</td><td>encontra transação pelo receipt</td><td class="status-pass">PASS</td></tr>
+      <tr><td>7</td><td class="fn">get_transaction_by_receipt()</td><td>receipt inexistente retorna NULL</td><td class="status-pass">PASS</td></tr>
+      <tr><td>8</td><td class="fn">get_transaction_by_receipt()</td><td>queue NULL retorna NULL</td><td class="status-pass">PASS</td></tr>
+      <tr><td>9</td><td class="fn">delete_transaction()</td><td>remove e retorna 1</td><td class="status-pass">PASS</td></tr>
+      <tr><td>10</td><td class="fn">delete_transaction()</td><td>receipt não encontrado retorna 0</td><td class="status-pass">PASS</td></tr>
+      <tr><td>11</td><td class="fn">delete_transaction()</td><td>queue NULL retorna 0</td><td class="status-pass">PASS</td></tr>
+      <tr><td>12</td><td class="fn">delete_transaction()</td><td>único elemento: queue fica vazia</td><td class="status-pass">PASS</td></tr>
+      <tr><td>13</td><td class="fn">delete_transaction()</td><td>elemento do meio: encadeamento mantido</td><td class="status-pass">PASS</td></tr>
+
+      <tr><td class="section-label" colspan="4">can_accept_transaction (nova)</td></tr>
+      <tr><td>14</td><td class="fn">can_accept_transaction()</td><td>bloco NULL retorna 0</td><td class="status-pass">PASS</td></tr>
+      <tr><td>15</td><td class="fn">can_accept_transaction()</td><td>now &lt; expire_at retorna 1</td><td class="status-pass">PASS</td></tr>
+      <tr><td>16</td><td class="fn">can_accept_transaction()</td><td>bloco expirado retorna 0</td><td class="status-pass">PASS</td></tr>
+      <tr><td>17</td><td class="fn">can_accept_transaction()</td><td>now == expire_at (boundary) retorna 0</td><td class="status-pass">PASS</td></tr>
+
+      <tr><td class="section-label" colspan="4">send_to_block (nova)</td></tr>
+      <tr><td>18</td><td class="fn">send_to_block()</td><td>users NULL retorna 0</td><td class="status-pass">PASS</td></tr>
+      <tr><td>19</td><td class="fn">send_to_block()</td><td>queue NULL retorna 0</td><td class="status-pass">PASS</td></tr>
+      <tr><td>20</td><td class="fn">send_to_block()</td><td>block NULL retorna 0</td><td class="status-pass">PASS</td></tr>
+      <tr><td>21</td><td class="fn">send_to_block()</td><td>bloco expirado retorna 0</td><td class="status-pass">PASS</td></tr>
+      <tr><td>22</td><td class="fn">send_to_block()</td><td>queue vazia retorna 0</td><td class="status-pass">PASS</td></tr>
+      <tr><td>23</td><td class="fn">send_to_block()</td><td>transação válida (sender+receiver encontrados) retorna 1</td><td class="status-pass">PASS</td></tr>
+      <tr><td>24</td><td class="fn">send_to_block()</td><td>sender desconhecido (check_transaction falha) retorna 0</td><td class="status-pass">PASS</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="footer">
+  Gerado em 18 May 2026 &nbsp;|&nbsp; Unity Test Framework &nbsp;|&nbsp; blockchain-c-cli
+</div>
+
+</body>
+</html>

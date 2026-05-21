@@ -8,19 +8,21 @@ struct Transaction;
 
 typedef struct Coin{
     enum CoinType type;
-    int qtdCoin;
+    double qtdCoin;
   struct Coin* prox;
 } UserCoin;
 
 typedef struct Users
 {
   char* uuid;
+  char* cpf;
   char* name;
   char* hashPass;
   int age;
+  double balance;
   struct Bank* bank;
   struct Transaction* transaction_id;
-  UserCoin* coigens;
+  UserCoin* coins;
   struct Users* prox;
 } Users;
 

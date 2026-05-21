@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include "../models/bank_model.h"
 #include "../models/user_model.h"
+#include "../models/transaction_model.h"
 
 int is_user_from_bank(Bank* bank, Users* user)
 {
@@ -36,4 +37,10 @@ int reject_user_account(Bank* bank, Users* user)
 		bank->qtdClients -= 1;
 	}
 	return 1;
+}
+
+int add_balance(Users* u, double amount) {
+    if (!u || amount <= 0) return 0;
+    u->balance += amount;
+    return 1;
 }

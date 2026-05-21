@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../models_functions/user_actions_mod.h"
 #include "../models/exchange_model.h"
 #include "../models_functions/exchange.h"
 

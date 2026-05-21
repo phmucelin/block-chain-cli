@@ -6,6 +6,7 @@
 #include "../models/transaction_model.h"
 #include "../models/coinType_model.h"
 #include "../models/user_model.h"
+#include "../models_functions/hash.h"
 
 static pos users_pos[100];
 
@@ -35,38 +36,27 @@ char* generate_uuid(){
     return uuid_str;
 }
 
-char* generate_hash(const char* password) {
-    char* hash = (char*)malloc(33); // 32 caracteres + null terminator
-    if (hash == NULL) {
-        return NULL; // Falha na alocação de memória
-    }
-    for (size_t i = 0; i < 32; i++) {
-        hash[i] = "0121104592XcDKlPq7s8a9b4e6f3g5h0i1j2mnoqrstulkocUiABEFGHIJYZ"[rand() % 16];
-    }
-    hash[32] = '\0';
-    return hash;
-}
 
-Users *new_user(char *name, char *password, char *dataNasc)
+Users *new_user(char *name, char *cpf, char *password, char *dataNasc)
 {
     Users *new_user = (Users *)malloc(sizeof(Users));
     if (new_user == NULL)
-    {
-        return NULL; // Falha na alocação de memória
-    }
-    if(!name || !password || !dataNasc) {
+        return NULL;
+    if(!name || !cpf || !password || !dataNasc) {
         free(new_user);
         return NULL;
     }
-    new_user->name = name;
-    new_user->hashPass = generate_hash(password);
-    new_user->age = atoi(dataNasc);
-    new_user->bank = NULL;
+    new_user->name     = name;
+    new_user->cpf      = cpf;
+    new_user->hashPass = hash(password);
+    new_user->balance  = 0.0;
+    new_user->age      = atoi(dataNasc);
+    new_user->bank     = NULL;
     new_user->transaction_id = NULL;
-    new_user->coins = NULL;
-    new_user->uuid = generate_uuid();
-    new_user->prox = NULL;
-    if(!new_user->hashPass || !new_user->uuid || !new_user->age || new_user->age <= 0) {
+    new_user->coins    = NULL;
+    new_user->uuid     = generate_uuid();
+    new_user->prox     = NULL;
+    if(!new_user->hashPass || !new_user->uuid || new_user->age <= 0) {
         free(new_user->hashPass);
         free(new_user->uuid);
         free(new_user);
@@ -98,9 +88,9 @@ static int inserir_user_hashTable(Users* user) {
     int endereco = hash_uuid(user->uuid);
     for (int i = 0; i < 100; i++)
     {
-        if (users_pos[endereco].ocupado == 0) {
-            users_pos[endereco].user = user;
-            users_pos[endereco].ocupado = 1;
+        if (users_pos[(endereco + i) % 100].ocupado == 0) {
+            users_pos[(endereco + i) % 100].user = user;
+            users_pos[(endereco + i) % 100].ocupado = 1;
             return 1; // Sucesso
         }
     }
@@ -111,8 +101,8 @@ static Users* buscar_user_hashTable(char* uuid) {
     int endereco = hash_uuid(uuid);
     for (int i = 0; i < 100; i++)
     {
-        if (users_pos[endereco].ocupado == 1 && strcmp(users_pos[endereco].user->uuid, uuid) == 0) {
-            return users_pos[endereco].user; // Usuário encontrado
+        if (users_pos[(endereco + i) % 100].ocupado == 1 && strcmp(users_pos[(endereco + i) % 100].user->uuid, uuid) == 0) {
+            return users_pos[(endereco + i) % 100].user; // Usuário encontrado
         }
     }
     return NULL; // Usuário não encontrado

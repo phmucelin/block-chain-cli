@@ -91,12 +91,18 @@ void atualizarPrecosAPI(CoinType tipo) {
         "https://api.coingecko.com/api/v3/simple/price?ids=%s&vs_currencies=usd",
         coinNames[tipo]);
 
+    struct curl_slist *headers = NULL;
+    headers = curl_slist_append(headers, "User-Agent: blockchain-cli/1.0");
+    headers = curl_slist_append(headers, "Accept: application/json");
+
     curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10L);
     curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 5L);
     curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1L);
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
 
     CURLcode res = curl_easy_perform(curl);
 
@@ -122,6 +128,7 @@ void atualizarPrecosAPI(CoinType tipo) {
     printf("Preço de %s atualizado: %.2f USD\n", coinNames[tipo], preco);
 
 cleanup:
+    curl_slist_free_all(headers);
     curl_easy_cleanup(curl);
     free(chunk.data);
 }
